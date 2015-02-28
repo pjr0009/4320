@@ -11,8 +11,17 @@ class UDPClient {
       // datagram socket to recieve packets
       DatagramSocket clientSocket = new DatagramSocket(); 
       
-      //host internet address name (should probably use a user friendly name here
-      InetAddress IPAddress = InetAddress.getByName("131.204.14.207"); 
+      //host internet address name (should probably use a user friendly name here)
+      String InetAddr= "131.204.14.207";
+      
+      for(int i = 0; i < args.length; i++) {
+          if(args[i].equals("--local")){
+            InetAddr = "127.0.0.1"; // if local switch is present, use local host, meaning client & server are running on same machine.
+            System.out.println("Using Localhost");
+          }
+      }
+
+      InetAddress IPAddress = InetAddress.getByName(InetAddr); 
       
       // use an array list for recieve data here, we want our packets to be stored
       // in recieve data, and have it grow dynamically (may want to limit it?)
@@ -21,32 +30,38 @@ class UDPClient {
       byte[] receiveData = new byte[256]; 
   
       // get http request from user
+      System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
+      System.out.print("Request: ");
+
       String request = inFromUser.readLine(); 
       sendData = request.getBytes();
       
       // construct outgoing request packet
       DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 10046); 
   
+
       clientSocket.send(sendPacket); 
   
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length); 
  	
-
-	int i = 0;
-	clientSocket.receive(receivePacket);
-	String data =  new String(receivePacket.getData());
-	while (data != null) {
-		System.out.println(data);
-		receiveData = new byte[256];
-      		receivePacket = new DatagramPacket(receiveData, receiveData.length); 
-		clientSocket.receive(receivePacket);
-		data =  new String(receivePacket.getData());
-
-	}
-	System.out.println(data);
+      int i = 0;
+      // recieve first packet
+      clientSocket.receive(receivePacket);
+      String data = "";
+      while (receivePacket.getData() != null) {
+        data +=  new String(receivePacket.getData());
+      	receiveData = new byte[256];
+        receivePacket = new DatagramPacket(receiveData, receiveData.length); 
+      	try {
+          clientSocket.receive(receivePacket);
+        } catch (SocketTimeoutException e) {
+          break;
+        }
+      }
+      System.out.println(data);
   
       clientSocket.close(); 
-      } 
+} 
 
 
 

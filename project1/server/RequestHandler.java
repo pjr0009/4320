@@ -8,6 +8,7 @@ class RequestHandler {
 
 	String request;
 	String contentType;
+	String action;
 	long contentLength;
 	String body;
 	File file;
@@ -18,7 +19,6 @@ class RequestHandler {
 	public RequestHandler(String inputRequest)
 	{
 		request = inputRequest;
-		System.out.println("Received Input Request: " + inputRequest);
 		contentType = "text/plain";
 	}
 
@@ -28,6 +28,7 @@ class RequestHandler {
 		messageSections = request.split(" ");
 		if(messageSections.length == 3)
 		{
+			action = messageSections[0];
 			fileName = messageSections[1];
 			file = new File(fileName);
 			if(!messageSections[0].equals("GET"))
@@ -68,7 +69,7 @@ class RequestHandler {
 		testResponse += " Document Follows " + '\r' + '\n';
 		testResponse += "Content-Type: " + contentType + '\r' + '\n';
 		testResponse += "Content-Length: " + contentLength + '\r' + '\n';
-		testResponse += "Checksum: " + computeChecksum() + '\r' + '\n';
+		testResponse += "Checksum: " + '\r' + '\n';
 		testResponse += '\r' + '\n' + '\0';
 		
 		if (responseCode == 200)
@@ -86,22 +87,22 @@ class RequestHandler {
 			}
 		}
 	
-
-
-
-		//testResponse += file contents
-
 		return testResponse;
 		
 	}
 
 	public void logRequest(){
  	
-		System.out.println("Content-Type: " + contentType + '\r' + '\n');
-		System.out.println("Content-Length: " + contentLength + '\r' + '\n');
+		System.out.println("Proccessing " + action + " " + fileName + " type: " + contentType);
 		
 	}
 
+
+	public void logRequestComplete(){
+ 	
+		System.out.println(responseCode + " " + action + " " + fileName + " type: " + contentType);
+		
+	}
 	
 
 
