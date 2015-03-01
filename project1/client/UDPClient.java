@@ -1,9 +1,12 @@
 import java.io.*; 
 import java.net.*; 
 import java.util.Random;
-  
+import java.util.regex.*;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
+
 class UDPClient { 
-    public static void main(String args[]) throws Exception 
+  public static void main(String args[]) throws Exception 
     { 
       // input stream reader for user input
       BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
@@ -41,14 +44,15 @@ class UDPClient {
   
 
       clientSocket.send(sendPacket); 
-  
+
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length); 
  	
       int i = 0;
       // recieve first packet
       clientSocket.receive(receivePacket);
       String data = "";
-      while (receivePacket.getData() != null) {
+      while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
+        clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
       	receiveData = new byte[256];
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
@@ -58,17 +62,51 @@ class UDPClient {
           break;
         }
       }
-      System.out.println(data);
+      // extract checksum from recieved message
+      Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
+      long checksum = 0;
+      if (matcher.find()) {
+        String someNumberStr = matcher.group(1);
+
+        checksum = Integer.parseInt(someNumberStr.trim());
+      }
+      // strip out checksum field 
+      data = data.replaceAll("(Checksum: +[0-9].*)", "");
+      
+      long computedChecksum = computeChecksum(data);
+
+      if(computedChecksum == checksum){
+        System.out.println("Checksum verification passed! recieved: "+checksum+" computed: "+computedChecksum);
+      }else{
+        System.out.println("Checksum verification failed! recieved: "+checksum+" computed: "+computedChecksum);
+
+      }
+
+      System.out.println("\nDATA RECEIVED:\n\n" + data + "\n");
   
       clientSocket.close(); 
-} 
+  } 
 
 
 
+  public static long computeChecksum(String data) {
+    
+    // parse response into bytestream
+    byte[] bytes = data.getBytes();
+
+    //create checksum object.
+    Checksum checksum = new CRC32();
+    checksum.update(bytes, 0, bytes.length);
+
+    // get checksum value
+    long checksumValue = checksum.getValue();
+
+    return checksumValue;
+
+  }
 
 
-public byte[] gremlin(double inputProbability, byte byteArray[])
-{
+  public byte[] gremlin(double inputProbability, byte byteArray[]) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -122,5 +160,5 @@ public byte[] gremlin(double inputProbability, byte byteArray[])
         System.out.println("Debug:The packet was not corrupted in the Gremlin function.");//**add packet number
         return byteArray;
     }
-}
+  }
 }

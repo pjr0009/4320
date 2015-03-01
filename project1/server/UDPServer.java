@@ -1,8 +1,7 @@
 import java.io.*; 
 import java.net.*;
 import java.util.Scanner;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
+
 
 class UDPServer 
 { 
@@ -27,7 +26,7 @@ class UDPServer
 			rh.requestValidator();			
 			rh.logRequest();
 
-			sendData = rh.parsedResponse().getBytes("UTF-8");
+			sendData = rh.checkSummedResponse().getBytes("UTF-8");
             int offset = 0;
 			int length = 0;
 			
@@ -60,6 +59,7 @@ class UDPServer
 
 
 			}
+			rh.logRequestComplete();
 		} 
 	}
 }

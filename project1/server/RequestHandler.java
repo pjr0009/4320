@@ -2,7 +2,8 @@ import java.io.File;
 import java.nio.file.*;
 import java.nio.charset.Charset;
 import java.io.IOException;
-
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 class RequestHandler { 
 
@@ -59,8 +60,7 @@ class RequestHandler {
 		return responseCode;
     	}
 
-	public String parsedResponse()
-	{
+	public String parsedResponse() {
 		requestValidator();
 	 			
 		String testResponse = "";
@@ -69,7 +69,6 @@ class RequestHandler {
 		testResponse += " Document Follows " + '\r' + '\n';
 		testResponse += "Content-Type: " + contentType + '\r' + '\n';
 		testResponse += "Content-Length: " + contentLength + '\r' + '\n';
-		testResponse += "Checksum: " + '\r' + '\n';
 		testResponse += '\r' + '\n' + '\0';
 		
 		if (responseCode == 200)
@@ -91,6 +90,26 @@ class RequestHandler {
 		
 	}
 
+	public String checkSummedResponse() {
+		System.out.println("Here");
+		String response = parsedResponse();
+		// parse response into bytestream
+		byte[] bytes = response.getBytes();
+
+		//create checksum object.
+        Checksum checksum = new CRC32();
+	    checksum.update(bytes, 0, bytes.length);
+
+	    // get checksum value
+        long checksumValue = checksum.getValue();
+
+        //append checksum
+        response += new String( ("Checksum: " + checksumValue) );
+        return response;
+
+
+	}
+
 	public void logRequest(){
  	
 		System.out.println("Proccessing " + action + " " + fileName + " type: " + contentType);
@@ -100,7 +119,7 @@ class RequestHandler {
 
 	public void logRequestComplete(){
  	
-		System.out.println(responseCode + " " + action + " " + fileName + " type: " + contentType);
+		System.out.println("Completed: " + responseCode + " " + action + " " + fileName + " type: " + contentType);
 		
 	}
 	
