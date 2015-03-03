@@ -59,7 +59,8 @@ class UDPClient {
       clientSocket.receive(receivePacket);
       String data = "";
       while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
-        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData()));
+        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i));
+        i += 1;
         clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
       	receiveData = new byte[256];
@@ -86,7 +87,7 @@ class UDPClient {
       if(computedChecksum == checksum){
         System.out.println("Checksum verification passed! recieved: "+checksum+" computed: "+computedChecksum);
       }else{
-        System.out.println("Checksum verification failed! recieved: "+checksum+" computed: "+computedChecksum);
+        System.out.println("Checksum verification failed! computed: "+computedChecksum);
 
       }
 
@@ -114,7 +115,7 @@ class UDPClient {
   }
 
 
-  public static byte[] gremlin(double inputProbability, byte byteArray[]) {
+  public static byte[] gremlin(double inputProbability, byte byteArray[], int packet_sequence_number) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -159,13 +160,12 @@ class UDPClient {
             byteArray[randomInt] = (byte)indexElement;
         }
         //The packet was corrupted.
-        System.out.println("Debug:The packet was corrupted in the Gremlin function."); //***add packet number
+        System.out.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
         return byteArray;
     }
     else
     {
         //Gremlin function does not corrupt the file        
-        System.out.println("Debug:The packet was not corrupted in the Gremlin function.");//**add packet number
         return byteArray;
     }
   }
