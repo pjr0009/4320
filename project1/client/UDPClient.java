@@ -5,6 +5,7 @@ import java.util.regex.*;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import java.util.Scanner;
+import java.io.PrintWriter;
 
 class UDPClient { 
   public static void main(String args[]) throws Exception 
@@ -53,13 +54,16 @@ class UDPClient {
       clientSocket.send(sendPacket); 
 
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length); 
- 	
+ 
+	File file = new File("Output.html");
+	PrintWriter writer = new PrintWriter(file, "UTF-8");
+	
       int i = 0;
       // recieve first packet
       clientSocket.receive(receivePacket);
       String data = "";
       while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
-        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i));
+        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i, writer));
         i += 1;
         clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
@@ -77,7 +81,7 @@ class UDPClient {
       if (matcher.find()) {
         String someNumberStr = matcher.group(1);
 
-        checksum = Integer.parseInt(someNumberStr.trim());
+        checksum = Long.parseLong(someNumberStr.trim());
       }
       // strip out checksum field 
       data = data.replaceAll("(Checksum: +[0-9].*)", "");
@@ -90,8 +94,8 @@ class UDPClient {
         System.out.println("Checksum verification failed! computed: "+computedChecksum);
 
       }
-
-      System.out.println("\nDATA RECEIVED:\n\n" + data + "\n");
+      writer.println(data);
+	writer.close();
   
       clientSocket.close(); 
   } 
@@ -115,7 +119,7 @@ class UDPClient {
   }
 
 
-  public static byte[] gremlin(double inputProbability, byte byteArray[], int packet_sequence_number) {
+  public static byte[] gremlin(double inputProbability, byte byteArray[], int packet_sequence_number, PrintWriter print) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -160,7 +164,7 @@ class UDPClient {
             byteArray[randomInt] = (byte)indexElement;
         }
         //The packet was corrupted.
-        System.out.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
+        print.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
         return byteArray;
     }
     else
