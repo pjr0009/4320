@@ -59,40 +59,9 @@ class UDPClient {
       clientSocket.receive(receivePacket);
       String data = "";
       while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
-        String temp_data = new String(receivePacket.getData());
-        // extract checksum from recieved message
-        Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(temp_data);
-        long checksum = 0;
-        if (matcher.find()) {
-          String someNumberStr = matcher.group(1);
-
-          checksum = Long.parseLong(someNumberStr.trim());
-        }
-        else{
-          System.out.println("Checksum field not found!!!");
-          //kill
-
-        }
-        // strip out checksum field 
-        data = temp_data.replaceAll("(Checksum: +[0-9].*)", "");
-        
-        long computedChecksum = computeChecksum(data.getBytes());
-
-        if(computedChecksum == checksum){
-          System.out.println("Checksum verification passed! recieved: "+checksum+" computed: "+computedChecksum);
-        }else{
-          System.out.println("Checksum verification failed!");
-
-        }
-
-
-        receivePacket.setData(gremlin(gremlinProbabilty, data.getBytes(), i));
-        i += 1;
+        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData()));
         clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
-
-
-
       	receiveData = new byte[256];
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
       	try {
@@ -101,7 +70,25 @@ class UDPClient {
           break;
         }
       }
+      // extract checksum from recieved message
+      Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
+      long checksum = 0;
+      if (matcher.find()) {
+        String someNumberStr = matcher.group(1);
 
+        checksum = Integer.parseInt(someNumberStr.trim());
+      }
+      // strip out checksum field 
+      data = data.replaceAll("(Checksum: +[0-9].*)", "");
+      
+      long computedChecksum = computeChecksum(data);
+
+      if(computedChecksum == checksum){
+        System.out.println("Checksum verification passed! recieved: "+checksum+" computed: "+computedChecksum);
+      }else{
+        System.out.println("Checksum verification failed! recieved: "+checksum+" computed: "+computedChecksum);
+
+      }
 
       System.out.println("\nDATA RECEIVED:\n\n" + data + "\n");
   
@@ -110,8 +97,11 @@ class UDPClient {
 
 
 
-  public static long computeChecksum(byte[] bytes) {
+  public static long computeChecksum(String data) {
     
+    // parse response into bytestream
+    byte[] bytes = data.getBytes();
+
     //create checksum object.
     Checksum checksum = new CRC32();
     checksum.update(bytes, 0, bytes.length);
@@ -124,7 +114,7 @@ class UDPClient {
   }
 
 
-  public static byte[] gremlin(double inputProbability, byte byteArray[], int sequence_number) {
+  public static byte[] gremlin(double inputProbability, byte byteArray[]) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -169,13 +159,13 @@ class UDPClient {
             byteArray[randomInt] = (byte)indexElement;
         }
         //The packet was corrupted.
-        System.out.println("Debug:The packet " + sequence_number + " was corrupted in the Gremlin function."); //***add packet number
+        System.out.println("Debug:The packet was corrupted in the Gremlin function."); //***add packet number
         return byteArray;
     }
     else
     {
         //Gremlin function does not corrupt the file        
-        System.out.println("Debug:The packet " + sequence_number + " was not corrupted in the Gremlin function.");//**add packet number
+        System.out.println("Debug:The packet was not corrupted in the Gremlin function.");//**add packet number
         return byteArray;
     }
   }
