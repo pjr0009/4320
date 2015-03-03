@@ -4,10 +4,17 @@ import java.util.Random;
 import java.util.regex.*;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+import java.util.Scanner;
 
 class UDPClient { 
   public static void main(String args[]) throws Exception 
     { 
+      
+      double gremlinProbabilty;
+      Scanner scan = new Scanner(System.in);
+      System.out.print("Input probability of Gremlin Activation: ");
+      gremlinProbabilty = scan.nextDouble();
+
       // input stream reader for user input
       BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
       
@@ -52,6 +59,7 @@ class UDPClient {
       clientSocket.receive(receivePacket);
       String data = "";
       while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
+        receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData()));
         clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
       	receiveData = new byte[256];
@@ -106,7 +114,7 @@ class UDPClient {
   }
 
 
-  public byte[] gremlin(double inputProbability, byte byteArray[]) {
+  public static byte[] gremlin(double inputProbability, byte byteArray[]) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -142,13 +150,13 @@ class UDPClient {
          
         //Change however many number of bytes needs to be changed (at random)
         int randomInt;
-        for (int i = 0; i < numBytesChanged; i++)
+        for (int i = 0; i < byteArray.length; i++)
         {
             randomInt = randomGenerator.nextInt(256);
-            byte indexElement = byteArray[randomInt];
-            byte mask = (byte)Integer.parseInt("01111111", 2);
-            byte corruptedValue = (byte)(indexElement & mask);
-            byteArray[randomInt] = corruptedValue;
+
+            int indexElement = byteArray[randomInt];
+            indexElement+=1;
+            byteArray[randomInt] = (byte)indexElement;
         }
         //The packet was corrupted.
         System.out.println("Debug:The packet was corrupted in the Gremlin function."); //***add packet number
