@@ -38,7 +38,7 @@ class UDPClient {
       // in recieve data, and have it grow dynamically (may want to limit it?)
       // send data should be small because we're just sending http requests
       byte[] sendData = new byte[1024]; 
-      byte[] receiveData = new byte[256]; 
+      byte[] receiveData = new byte[512]; 
   
       // get http request from user
       System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
@@ -67,7 +67,7 @@ class UDPClient {
         i += 1;
         clientSocket.setSoTimeout(500);
         data +=  new String(receivePacket.getData());
-      	receiveData = new byte[256];
+      	receiveData = new byte[512];
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
       	try {
           clientSocket.receive(receivePacket);
