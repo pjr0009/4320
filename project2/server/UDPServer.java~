@@ -13,7 +13,7 @@ class UDPServer
 		int portNumber = 10046;
 		DatagramSocket serverSocket = new DatagramSocket(portNumber);
 		byte[] receiveData = new byte[1024]; 
-		byte[] sendData  = new byte[512];
+		byte[] sendData  = new byte[256];
 		System.out.println("LISTENING ON PORT: "+portNumber);	
 		while(true)
 		{
@@ -32,18 +32,18 @@ class UDPServer
 			
 			System.out.println("Total message length: " + sendData.length);
 
-			if(sendData.length < 512){
+			if(sendData.length < 256){
 				length = sendData.length;
 			} else{
-				length = 512;				
+				length = 256;				
 			}
 
 			serverSocket.send(new DatagramPacket(sendData, 0, length, IPAddress, port));
-			offset += 512;
+			offset += 256;
 			while(offset < sendData.length){
 				// get how many bytes are left to send
 				long remainingBytes = sendData.length - offset;
-				if(remainingBytes < 512){
+				if(remainingBytes < 256){
 					length = (int)remainingBytes;	
 					serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
 					break;			
@@ -52,8 +52,8 @@ class UDPServer
 
 					serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
 
-					System.out.println("Packet " + offset/512 + " was sent.");
-					offset += 512;
+					System.out.println("Packet " + offset/256 + " was sent.");
+					offset += 256;
 
 				}
 
