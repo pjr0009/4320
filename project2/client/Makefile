@@ -6,6 +6,7 @@ JC = javac
 
 CLASSES = \
 	   UDPClient.java \
+	   Packet.java
 
 default: classes
 

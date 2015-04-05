@@ -42,7 +42,7 @@ class UDPClient {
       // send data should be small because we're just sending http requests
       byte[] sendData = new byte[1024]; 
       byte[] receiveData = new byte[512]; 
-  
+      ArrayList<Packet> responseBuffer = new ArrayList<Packet>(); 
       // get http request from user
       System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
       System.out.print("Request: ");
@@ -83,6 +83,9 @@ class UDPClient {
         String[] headers = headerString.split(",");
 	// Extract the data of the packet by removing the fullHeaderString
 	payload = data.replace(fullHeaderString, "");
+	byte[] payloadBytes=payload.getBytes("UTF-8");
+	// create new packet with payload and header values
+	Packet newPacket = new Packet(Integer.parseInt(headers[0]), payloadBytes);
 	System.out.println(payload);
       	System.out.println(headers.length);
         	
