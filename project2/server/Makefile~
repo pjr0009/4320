@@ -6,8 +6,6 @@ JC = javac
 
 CLASSES = \
 		UDPServer.java \
-		Pipeline.java \
-		Packet.java \
 		RequestHandler.java
 
 default: classes
