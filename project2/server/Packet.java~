@@ -16,12 +16,12 @@ public class Packet
 		this.payload = payloadIn;
 	}
 
-	public boolean setACK()
+	public void setACK()
 	{
 		this.ACK = true;
 	}
 
-	public boolean setNAK()
+	public void setNAK()
 	{
 		this.NAK = true;
 	}
@@ -34,6 +34,12 @@ public class Packet
 	public boolean getNAK()
 	{
 		return this.NAK;
+	}
+	
+	public byte[] getParsedResponse()
+	{
+		byte[] response = "Hello.";
+		return response.getBytes();
 	}
 
 }

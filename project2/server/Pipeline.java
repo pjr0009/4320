@@ -1,15 +1,22 @@
 import java.util.ArrayList;
+import java.net.*;
+import java.io.IOException;
 
-public class Pipeline implements Runnable{
+public class Pipeline implements Runnable {
 
 	
 	ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 	ArrayList<Packet> window = new ArrayList<Packet>();
+	InetAddress IpAddress;
+	int portNumber;
+	DatagramSocket serverSocket;
 
-	public Pipeline(ArrayList<Packet> packetBuffer)
+	public Pipeline(ArrayList<Packet> packetBuffer, InetAddress IpAddressIn, int portNumberIn, DatagramSocket socketObjectIn)
 	{
 		this.packetBuffer = packetBuffer;
-		System.out.print("PacketBuffer[0]: " + packetBuffer.get(0));
+		this.IpAddress = IpAddressIn;
+		this.portNumber = portNumberIn;
+		this.serverSocket = socketObjectIn;
 	}
 
 	public void run()
@@ -20,7 +27,16 @@ public class Pipeline implements Runnable{
 			if (window.size() < 8)
 			{
 				//Dequeue packet from packetBuffer
-				window.add(packetBuffer.get(0));
+				Packet packet = packetBuffer.get(0);
+				window.add(packet);
+				try {
+					serverSocket.send(new DatagramPacket(packet.getParsedResponse(), 1, IpAddress, portNumber));
+				}
+				catch (IOException e)
+				{
+					System.out.println(e);
+				}
+				System.out.println("Pipeline Size: " + window.size());
 				packetBuffer.remove(0);
 			}
 		}		

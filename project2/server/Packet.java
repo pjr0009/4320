@@ -35,5 +35,11 @@ public class Packet
 	{
 		return this.NAK;
 	}
+	
+	public byte[] getParsedResponse()
+	{
+		String response = "Hello.";
+		return response.getBytes();
+	}
 
 }
