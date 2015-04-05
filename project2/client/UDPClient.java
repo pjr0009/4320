@@ -58,9 +58,9 @@ class UDPClient {
 
       DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length); 
  
-	File file = new File("Output.html");
-	PrintWriter writer = new PrintWriter(file, "UTF-8");
-	
+      File file = new File("Output.html");
+      PrintWriter writer = new PrintWriter(file, "UTF-8");
+  
       int i = 0;
       // recieve first packet
       clientSocket.receive(receivePacket);
@@ -70,28 +70,10 @@ class UDPClient {
         i += 1;
         clientSocket.setSoTimeout(500);
         //extract checksum from recieved message
-	data = new String(receivePacket.getData());
-      	String headerString = "";
-	String fullHeaderString = "";
-	String payload = "";
-	Matcher headerMatcher = Pattern.compile("START:(.+?):END").matcher(data);
-        if(headerMatcher.find()){
-          headerString = headerMatcher.group(1);
-          // extract the whole header from "START to END" 
-	  fullHeaderString = headerMatcher.group(0);
-	}
-        String[] headers = headerString.split(",");
-	// Extract the data of the packet by removing the fullHeaderString
-	payload = data.replace(fullHeaderString, "");
-	byte[] payloadBytes=payload.getBytes("UTF-8");
-	// create new packet with payload and header values
-	Packet newPacket = new Packet(Integer.parseInt(headers[0]), payloadBytes);
-	System.out.println(payload);
-      	System.out.println(headers.length);
-        	
-	receiveData = new byte[512];
+        Packet responsePacket = parseResponseIntoPacket(new String(receivePacket.getData()));
+        responseBuffer.add(responsePacket);
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
-      	try {
+        try {
           clientSocket.receive(receivePacket);
         } catch (SocketTimeoutException e) {
           break;
@@ -118,12 +100,33 @@ class UDPClient {
 
       }
       writer.println(data);
-	writer.close();
+  writer.close();
   
       clientSocket.close(); 
   } 
 
 
+  public static Packet parseResponseIntoPacket(String data){
+    String headerString = "";
+    String fullHeaderString = "";
+    String payload = "";
+    Matcher headerMatcher = Pattern.compile("START:(.+?):END").matcher(data);
+    
+    if(headerMatcher.find()){
+      headerString = headerMatcher.group(1);
+      // extract the whole header from "START to END" 
+      fullHeaderString = headerMatcher.group(0);
+    }
+
+    String[] headers = headerString.split(",");
+    // Extract the data of the packet by removing the fullHeaderString
+    payload = data.replace(fullHeaderString, "");
+    byte[] payloadBytes=payload.getBytes();
+    // create new packet with payload and header values
+    System.out.println(payload);
+    System.out.println(headers.length);
+    return new Packet(Integer.parseInt(headers[0]), payloadBytes);
+  }
 
   public static long computeChecksum(String data) {
     
@@ -178,7 +181,7 @@ class UDPClient {
          
         //Change however many number of bytes needs to be changed (at random)
         int randomInt;
-	for (int i = 0; i < byteArray.length; i++)
+  for (int i = 0; i < byteArray.length; i++)
         {
             randomInt = randomGenerator.nextInt(256);
 
