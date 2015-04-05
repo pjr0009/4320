@@ -17,14 +17,28 @@ public class Packet
 		this.payload = payloadIn;
 	}
 
-	public void setACK()
+	public void setACK(String arg)
 	{
-		this.ACK = true;
+		if (arg.equals("1"))
+		{		
+			this.ACK = true;
+		}
+		else
+		{
+			this.ACK = false;
+		}
 	}
 
-	public void setNAK()
+	public void setNAK(String arg)
 	{
-		this.NAK = true;
+		if (arg.equals("1"))
+		{		
+			this.NAK = true;
+		}
+		else
+		{
+			this.NAK = false;
+		}
 	}
 
 	public int getACK()
