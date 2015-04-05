@@ -6,6 +6,7 @@ public class Packet
 	int sequenceNumber;
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
+	long checksumValue;
 	
 	
 	public Packet(int sequenceNumberIn, byte[] payloadIn)
@@ -26,20 +27,29 @@ public class Packet
 		this.NAK = true;
 	}
 
-	public boolean getACK()
+	public int getACK()
 	{
-		return this.ACK;
+		return (this.ACK ? 1 : 0);
 	}
 
-	public boolean getNAK()
+	public int getNAK()
 	{
-		return this.NAK;
+		return (this.NAK ? 1 : 0);
 	}
 	
 	public byte[] getParsedResponse()
 	{
-		String response = "Hello.";
+		//Format: Sequence Number, ACK, NAK, Checksum
+		String response = "START:";		
+		response += sequenceNumber;
+		response += "," + getACK();
+		response += "," + getNAK();
+		response += "," + computeChecksum() + ":END" + (new String(payload));
 		return response.getBytes();
 	}
-
+	
+	public long computeChecksum()
+	{
+		return 1;
+	}
 }

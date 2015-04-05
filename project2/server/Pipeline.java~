@@ -29,8 +29,11 @@ public class Pipeline implements Runnable {
 				//Dequeue packet from packetBuffer
 				Packet packet = packetBuffer.get(0);
 				window.add(packet);
+				byte[] response = packet.getParsedResponse();
+				int responseLength = (int)(response.length);
+				System.out.println(responseLength);
 				try {
-					serverSocket.send(new DatagramPacket(packet.getParsedResponse(), 1, IpAddress, portNumber));
+					serverSocket.send(new DatagramPacket(response, responseLength, IpAddress, portNumber));
 				}
 				catch (IOException e)
 				{

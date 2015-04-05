@@ -63,7 +63,7 @@ class UDPServer
 					snBase++;
 				}
 			}
-			Pipeline pipeline = new Pipeline(packetBuffer, IPAddress, port);			
+			Pipeline pipeline = new Pipeline(packetBuffer, IPAddress, port, serverSocket);			
 			//Create a new pipline thread
 			(new Thread(pipeline)).start();	
 

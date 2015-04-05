@@ -43,7 +43,8 @@ class UDPServer
 
 			//serverSocket.send(new DatagramPacket(sendData, 0, length, IPAddress, port));
 			int snBase = 0;
-			packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));		
+			packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
+			snBase++;
 			offset += PACKET_SIZE;
 			while(offset < sendData.length){
 				// get how many bytes are left to send
