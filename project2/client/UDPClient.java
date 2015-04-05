@@ -1,11 +1,14 @@
-import java.io.*; 
-import java.net.*; 
+import java.io.*;
+import java.net.*;
 import java.util.Random;
 import java.util.regex.*;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import java.util.Scanner;
+import java.util.ArrayList;
 import java.io.PrintWriter;
+
+
 
 class UDPClient { 
   public static void main(String args[]) throws Exception 
@@ -66,8 +69,24 @@ class UDPClient {
         receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i, writer));
         i += 1;
         clientSocket.setSoTimeout(500);
-        data +=  new String(receivePacket.getData());
-      	receiveData = new byte[512];
+        //extract checksum from recieved message
+	data = new String(receivePacket.getData());
+      	String headerString = "";
+	String fullHeaderString = "";
+	String payload = "";
+	Matcher headerMatcher = Pattern.compile("START:(.+?):END").matcher(data);
+        if(headerMatcher.find()){
+          headerString = headerMatcher.group(1);
+          // extract the whole header from "START to END" 
+	  fullHeaderString = headerMatcher.group(0);
+	}
+        String[] headers = headerString.split(",");
+	// Extract the data of the packet by removing the fullHeaderString
+	payload = data.replace(fullHeaderString, "");
+	System.out.println(payload);
+      	System.out.println(headers.length);
+        	
+	receiveData = new byte[512];
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
       	try {
           clientSocket.receive(receivePacket);
@@ -76,6 +95,7 @@ class UDPClient {
         }
       }
       // extract checksum from recieved message
+ 
       Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
       long checksum = 0;
       if (matcher.find()) {
@@ -155,7 +175,7 @@ class UDPClient {
          
         //Change however many number of bytes needs to be changed (at random)
         int randomInt;
-        for (int i = 0; i < byteArray.length; i++)
+	for (int i = 0; i < byteArray.length; i++)
         {
             randomInt = randomGenerator.nextInt(256);
 
