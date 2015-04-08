@@ -18,7 +18,7 @@ class UDPClient {
       Scanner scan = new Scanner(System.in);
       System.out.print("Input probability of Gremlin Activation: ");
       gremlinProbabilty = scan.nextDouble();
-
+      final int PORT_NUMBER = 10046;
       // input stream reader for user input
       BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in)); 
       
@@ -49,7 +49,7 @@ class UDPClient {
       sendData = request.getBytes();
       
       // construct outgoing request packet
-      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 10046); 
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, PORT_NUMBER); 
   
 
       clientSocket.send(sendPacket); 
@@ -60,7 +60,7 @@ class UDPClient {
       PrintWriter writer = new PrintWriter(file, "UTF-8");
   
       int i = 0;
-      TransportLayer transport = new TransportLayer(clientSocket);
+      TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER);
       (new Thread(transport)).start(); 
       // recieve first packet
       clientSocket.receive(receivePacket);

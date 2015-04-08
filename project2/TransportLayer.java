@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.regex.*;
 import java.net.*;
-
+import java.io.*;
 
 public class TransportLayer implements Runnable
 {
@@ -10,24 +10,26 @@ public class TransportLayer implements Runnable
   int baseSeqNumber = 0;
   int nextSeqNumber = 0;
   int windowSize = 8;
-
-  public TransportLayer(DatagramSocket socketObjectIn){
-    socket = socketObjectIn;
+  InetAddress IPAddress;
+  int portNumber;
+  public TransportLayer(DatagramSocket socketObjectIn, InetAddress IPAddressIn, int portNumberIn){
+    this.socket = socketObjectIn;
+    this.portNumber = portNumberIn;
+    this.IPAddress = IPAddressIn;
   }
 
   public void run(){
     while(true){
       if(buffer.size() == 8){
         // if we've gotten here it means we've recieved all the packets in some form, now we just need to check if they're valid
-        System.out.println("Here");
         Packet new_p = buffer.get(0);
         if(new_p.getACK() == 0){
           Packet ack = new Packet(new_p.sequenceNumber, new byte[0]);
-          byte[] response = packet.getParsedResponse();
+          byte[] response = ack.getParsedResponse();
           int responseLength = (int)(response.length);
-          System.out.println(responseLength);
           try {
-            socket.send(new DatagramPacket(response, responseLength, IpAddress, portNumber));
+            socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
+
           }
           catch (IOException e)
           {
