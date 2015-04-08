@@ -5,8 +5,12 @@ JC = javac
 		$(JC) $(JFLAGS) $*.java
 
 CLASSES = \
-	   UDPClient.java \
-	   Packet.java
+		UDPServer.java \
+		UDPClient.java \
+		TransportLayer.java \
+		Pipeline.java \
+		Packet.java \
+		RequestHandler.java
 
 default: classes
 

@@ -58,7 +58,7 @@ class UDPServer
 				}
 				else{
 					//serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
-					packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
+					packetBuffer.add(new Packet(snBase, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
 
 					offset += PACKET_SIZE;
 					snBase++;

@@ -9,6 +9,8 @@ public class Pipeline implements Runnable {
 	ArrayList<Packet> window = new ArrayList<Packet>();
 	InetAddress IpAddress;
 	int portNumber;
+	int baseSeqNumber = 0;
+	int nextSeqNumber = 0;
 	DatagramSocket serverSocket;
 
 	public Pipeline(ArrayList<Packet> packetBuffer, InetAddress IpAddressIn, int portNumberIn, DatagramSocket socketObjectIn)
@@ -39,7 +41,7 @@ public class Pipeline implements Runnable {
 				{
 					System.out.println(e);
 				}
-				System.out.println("Pipeline Size: " + window.size());
+				// System.out.println("Pipeline Size: " + window.size());
 				packetBuffer.remove(0);
 			}
 		}		

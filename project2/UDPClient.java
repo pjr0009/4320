@@ -38,11 +38,9 @@ class UDPClient {
       InetAddress IPAddress = InetAddress.getByName(InetAddr); 
       
       // use an array list for recieve data here, we want our packets to be stored
-      // in recieve data, and have it grow dynamically (may want to limit it?)
-      // send data should be small because we're just sending http requests
       byte[] sendData = new byte[1024]; 
       byte[] receiveData = new byte[512]; 
-      ArrayList<Packet> responseBuffer = new ArrayList<Packet>(); 
+      
       // get http request from user
       System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
       System.out.print("Request: ");
@@ -62,6 +60,8 @@ class UDPClient {
       PrintWriter writer = new PrintWriter(file, "UTF-8");
   
       int i = 0;
+      TransportLayer transport = new TransportLayer(clientSocket);
+      (new Thread(transport)).start(); 
       // recieve first packet
       clientSocket.receive(receivePacket);
       String data = "";
@@ -70,8 +70,11 @@ class UDPClient {
         i += 1;
         clientSocket.setSoTimeout(500);
         //extract checksum from recieved message
-        Packet responsePacket = parseResponseIntoPacket(new String(receivePacket.getData()));
-        responseBuffer.add(responsePacket);
+        data = new String(receivePacket.getData());
+        transport.demux(data);
+        
+
+        // create a new packet and try to receieve next data        
         receivePacket = new DatagramPacket(receiveData, receiveData.length); 
         try {
           clientSocket.receive(receivePacket);
@@ -106,27 +109,7 @@ class UDPClient {
   } 
 
 
-  public static Packet parseResponseIntoPacket(String data){
-    String headerString = "";
-    String fullHeaderString = "";
-    String payload = "";
-    Matcher headerMatcher = Pattern.compile("START:(.+?):END").matcher(data);
-    
-    if(headerMatcher.find()){
-      headerString = headerMatcher.group(1);
-      // extract the whole header from "START to END" 
-      fullHeaderString = headerMatcher.group(0);
-    }
 
-    String[] headers = headerString.split(",");
-    // Extract the data of the packet by removing the fullHeaderString
-    payload = data.replace(fullHeaderString, "");
-    byte[] payloadBytes=payload.getBytes();
-    // create new packet with payload and header values
-    System.out.println(payload);
-    System.out.println(headers.length);
-    return new Packet(Integer.parseInt(headers[0]), payloadBytes);
-  }
 
   public static long computeChecksum(String data) {
     
@@ -181,7 +164,7 @@ class UDPClient {
          
         //Change however many number of bytes needs to be changed (at random)
         int randomInt;
-  for (int i = 0; i < byteArray.length; i++)
+      for (int i = 0; i < byteArray.length; i++)
         {
             randomInt = randomGenerator.nextInt(256);
 
