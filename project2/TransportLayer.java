@@ -20,21 +20,26 @@ public class TransportLayer implements Runnable
 
   public void run(){
     while(true){
-      if(buffer.size() == 8){
+      if(buffer.size() > 0){
         // if we've gotten here it means we've recieved all the packets in some form, now we just need to check if they're valid
-        Packet new_p = buffer.get(0);
-        if(new_p.getACK() == 0){
-          Packet ack = new Packet(new_p.sequenceNumber, new byte[0]);
-          byte[] response = ack.getParsedResponse();
-          int responseLength = (int)(response.length);
-          try {
-            socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
+        for(int i = 0; i < buffer.size(); i++) {
+         	if(buffer.get(i).getACK() != 1){
+			// if a packet has arrived that hasnt been acknowledged, send ack
+			Packet current_packet = buffer.get(i);
+			Packet ack = new Packet(current_packet.sequenceNumber, new byte[0]);
+			ack.setACK(1);
+          		byte[] response = ack.getParsedResponse();
+          		int responseLength = (int)(response.length);
+          		try {
+            			socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
 
-          }
-          catch (IOException e)
-          {
-            System.out.println(e);
-          }
+          		}
+        	  	catch (IOException e)
+          		{
+            			System.out.println(e);
+          		}
+		}
+	  }
         }
       }
 
