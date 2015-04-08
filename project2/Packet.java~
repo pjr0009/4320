@@ -66,9 +66,4 @@ public class Packet
 	{
 		return 1;
 	}
-	
-	public int getSequenceNumber()
-	{
-		return this.sequenceNumber;
-	}
 }
