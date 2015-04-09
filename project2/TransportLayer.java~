@@ -70,7 +70,7 @@ public class TransportLayer implements Runnable
     byte[] payloadBytes=payload.getBytes();
     // create new packet with payload and header values, then
     // add the packet to the buffer
-    Packet packet = new Packet(Integer.parseInt(headers[0]), payloadBytes, IPAddress, portNumber);
+    Packet packet = new Packet(Integer.parseInt(headers[0]), payloadBytes);
     buffer.add(packet);
   }
 

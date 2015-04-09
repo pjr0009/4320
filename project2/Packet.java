@@ -1,3 +1,5 @@
+import java.net.*;
+
 public class Packet 
 {
 	//Class variables
@@ -7,14 +9,16 @@ public class Packet
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
-	InetAddress IpAddress;
+	public int portNumber;
+	InetAddress IPAddress;
 	
 	
-	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IpAddressIn)
+	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IPAddressIn, int portIn)
 	{
 		this.sequenceNumber = sequenceNumberIn;
 		this.payload = payloadIn;
-		this.IpAddress = IpAddressIn;
+		this.IPAddress = IPAddressIn;
+		this.portNumber = portIn;
 	}
 
         public Packet(int sequenceNumberIn)
@@ -85,4 +89,5 @@ public class Packet
 	{
 		return this.sequenceNumber;
 	}
+	
 }

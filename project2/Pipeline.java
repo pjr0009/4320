@@ -8,15 +8,13 @@ public class Pipeline implements Runnable {
 	ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 	ArrayList<Packet> window = new ArrayList<Packet>();
 	InetAddress IpAddress;
-	int portNumber;
 	int baseSeqNumber = 0;
 	int nextSeqNumber = 0;
 	DatagramSocket serverSocket;
 
-	public Pipeline(ArrayList<Packet> packetBuffer, InetAddress IpAddressIn, int portNumberIn, DatagramSocket socketObjectIn)
+	public Pipeline(ArrayList<Packet> packetBuffer, DatagramSocket socketObjectIn)
 	{
 		this.packetBuffer = packetBuffer;
-		this.portNumber = portNumberIn;
 		this.serverSocket = socketObjectIn;
 	}
 
@@ -34,7 +32,7 @@ public class Pipeline implements Runnable {
 				int responseLength = (int)(response.length);
 				System.out.println(responseLength);
 				try {
-					serverSocket.send(new DatagramPacket(response, responseLength, IpAddress, portNumber));
+					serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
 				}
 				catch (IOException e)
 				{

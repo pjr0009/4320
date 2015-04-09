@@ -1,28 +1,40 @@
+import java.net.*;
+
 public class Packet 
 {
 	//Class variables
-	boolean ACK;
-	boolean NAK;	
+	boolean ACK = false;
+	boolean NAK = false;	
 	int sequenceNumber;
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
-	InetAddress IpAddress;
+	public int portNumber;
+	InetAddress IPAddress;
 	
 	
-	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IpAddressIn)
+	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IpAddressIn, int portIn)
 	{
-		this.ACK = false;
-		this.NAK = false;
 		this.sequenceNumber = sequenceNumberIn;
 		this.payload = payloadIn;
-		this.IpAddress = IpAddressIn;
+		this.IPAddress = IPAddressIn;
+		this.portNumber = portIn;
 	}
+
+        public Packet(int sequenceNumberIn)
+        {
+                this.ACK = false;
+                this.NAK = false;
+                this.sequenceNumber = sequenceNumberIn;
+		this.payload = null;
+        }
+
+
 
 	public void setACK(String arg)
 	{
 		if (arg.equals("1"))
-		{		
+		{	
 			this.ACK = true;
 		}
 		else
@@ -44,8 +56,9 @@ public class Packet
 	}
 
 	public int getACK()
-	{
-		return (this.ACK ? 1 : 0);
+	{	
+		
+		return (ACK ? 1 : 0);
 	}
 
 	public int getNAK()
@@ -60,7 +73,10 @@ public class Packet
 		response += sequenceNumber;
 		response += "," + getACK();
 		response += "," + getNAK();
-		response += "," + computeChecksum() + ":END" + (new String(payload));
+		response += "," + computeChecksum() + ":END";
+		if(payload != null){
+			response += (new String(payload));
+		}
 		return response.getBytes();
 	}
 	
@@ -73,4 +89,5 @@ public class Packet
 	{
 		return this.sequenceNumber;
 	}
+	
 }

@@ -8,16 +8,13 @@ public class Pipeline implements Runnable {
 	ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 	ArrayList<Packet> window = new ArrayList<Packet>();
 	InetAddress IpAddress;
-	int portNumber;
 	int baseSeqNumber = 0;
 	int nextSeqNumber = 0;
 	DatagramSocket serverSocket;
 
-	public Pipeline(ArrayList<Packet> packetBuffer, InetAddress IpAddressIn, int portNumberIn, DatagramSocket socketObjectIn)
+	public Pipeline(ArrayList<Packet> packetBuffer, DatagramSocket socketObjectIn)
 	{
 		this.packetBuffer = packetBuffer;
-		this.IpAddress = IpAddressIn;
-		this.portNumber = portNumberIn;
 		this.serverSocket = socketObjectIn;
 	}
 

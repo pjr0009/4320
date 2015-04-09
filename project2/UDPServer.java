@@ -18,7 +18,7 @@ class UDPServer
 		byte[] receiveData = new byte[1024]; 
 		byte[] sendData  = new byte[PACKET_SIZE];
 		System.out.println("LISTENING ON PORT: "+ portNumber);	
-		Pipeline pipeline = new Pipeline(packetBuffer, IPAddress, port, serverSocket);			
+		Pipeline pipeline = new Pipeline(packetBuffer, serverSocket);			
 		//Create a new pipline thread
 		(new Thread(pipeline)).start();	
 		while(true)
@@ -47,7 +47,7 @@ class UDPServer
 
 			//serverSocket.send(new DatagramPacket(sendData, 0, length, IPAddress, port));
 			int snBase = 0;
-			packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
+			packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 			snBase++;
 			offset += PACKET_SIZE;
 			while(offset < sendData.length){
@@ -56,13 +56,13 @@ class UDPServer
 				if(remainingBytes < PACKET_SIZE){
 					length = (int)remainingBytes;
 					//serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
-					packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
+					packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 					snBase++;
 					break;			
 				}
 				else{
 					//serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
-					packetBuffer.add(new Packet(snBase, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE)));
+					packetBuffer.add(new Packet(snBase, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 
 					offset += PACKET_SIZE;
 					snBase++;
