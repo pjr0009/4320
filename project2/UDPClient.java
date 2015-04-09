@@ -44,8 +44,8 @@ class UDPClient {
       // get http request from user
       System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
       System.out.print("Request: ");
-
-      String request = inFromUser.readLine(); 
+	String request = "GET content/test3.html HTTP/1.0";
+      //String request = inFromUser.readLine(); 
       sendData = request.getBytes();
       
       // construct outgoing request packet

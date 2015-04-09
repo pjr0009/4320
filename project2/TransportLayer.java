@@ -20,17 +20,20 @@ public class TransportLayer implements Runnable
 
   public void run(){
     while(true){
-	if(buffer.size() > 0){
-        System.out.println("here 2");
 	// if we've gotten here it means we've recieved all the packets in some form, now we just need to check if they're valid
-        for(int i = 0; i < buffer.size(); i++) {
-         	if(buffer.get(i).getACK() != 1){
+        if(buffer.size() == 0){
+		System.out.println("here");
+	}
+	
+	for(int i = 0; i < buffer.size() -1; i++) {
+	 	
+		if(buffer.get(i).getACK() != 1){
 			// if a packet has arrived that hasnt been acknowledged, send ack
 			Packet current_packet = buffer.get(i);
 			Packet ack = new Packet(current_packet.sequenceNumber);
 			buffer.get(i).setACK("1");
 			ack.setACK("1");
-          		byte[] response = ack.getParsedResponse();
+			byte[] response = ack.getParsedResponse();
           		int responseLength = (int)(response.length);
 			try {
             			socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
@@ -42,9 +45,6 @@ public class TransportLayer implements Runnable
           		}
 		}
 	  }
-        }else{
-		System.out.println("hello");
-	}
       }
 
     }
@@ -52,6 +52,7 @@ public class TransportLayer implements Runnable
   
 
   public void demux(String data){
+    System.out.println("packet recieved");
     String headerString = "";
     String fullHeaderString = "";
     String payload = "";
