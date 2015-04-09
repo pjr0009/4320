@@ -7,14 +7,14 @@ public class Packet
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
+	InetAddress IpAddress;
 	
 	
-	public Packet(int sequenceNumberIn, byte[] payloadIn)
+	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IpAddressIn)
 	{
-		this.ACK = false;
-		this.NAK = false;
 		this.sequenceNumber = sequenceNumberIn;
 		this.payload = payloadIn;
+		this.IpAddress = IpAddressIn;
 	}
 
         public Packet(int sequenceNumberIn)

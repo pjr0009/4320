@@ -7,14 +7,16 @@ public class Packet
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
+	InetAddress IpAddress;
 	
 	
-	public Packet(int sequenceNumberIn, byte[] payloadIn)
+	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IpAddressIn)
 	{
 		this.ACK = false;
 		this.NAK = false;
 		this.sequenceNumber = sequenceNumberIn;
 		this.payload = payloadIn;
+		this.IpAddress = IpAddressIn;
 	}
 
 	public void setACK(String arg)
@@ -65,5 +67,10 @@ public class Packet
 	public long computeChecksum()
 	{
 		return 1;
+	}
+	
+	public int getSequenceNumber()
+	{
+		return this.sequenceNumber;
 	}
 }

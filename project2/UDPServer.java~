@@ -19,8 +19,8 @@ class UDPServer
 		byte[] sendData  = new byte[PACKET_SIZE];
 		System.out.println("LISTENING ON PORT: "+ portNumber);	
 		Pipeline pipeline = new Pipeline(packetBuffer, IPAddress, port, serverSocket);			
-		//Create a new pipline thread
-		(new Thread(pipeline)).start();	
+			//Create a new pipline thread
+			(new Thread(pipeline)).start();	
 		while(true)
 		{
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);

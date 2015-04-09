@@ -16,6 +16,7 @@ public class Pipeline implements Runnable {
 	public Pipeline(ArrayList<Packet> packetBuffer, InetAddress IpAddressIn, int portNumberIn, DatagramSocket socketObjectIn)
 	{
 		this.packetBuffer = packetBuffer;
+		this.IpAddress = IpAddressIn;
 		this.portNumber = portNumberIn;
 		this.serverSocket = socketObjectIn;
 	}
