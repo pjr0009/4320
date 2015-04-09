@@ -17,6 +17,16 @@ public class Packet
 		this.payload = payloadIn;
 	}
 
+        public Packet(int sequenceNumberIn)
+        {
+                this.ACK = false;
+                this.NAK = false;
+                this.sequenceNumber = sequenceNumberIn;
+		this.payload = null;
+        }
+
+
+
 	public void setACK(String arg)
 	{
 		if (arg.equals("1"))
