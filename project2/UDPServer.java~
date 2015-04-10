@@ -25,7 +25,6 @@ class UDPServer
 		Pipeline pipeline = new Pipeline(serverSocket, window, packetBuffer);			
 		//Create a new pipline thread
 		Thread thread = new Thread(pipeline);	
-		thread.start();
 		while(true)
 		{
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -72,6 +71,7 @@ class UDPServer
 				}
 			}
 			
+			thread.start();
 			while(packetBuffer.size() > 0){
 				// add level of inderection so that when we update packets to acked they can be updated in the queue
 				window.put(packetBuffer.indexOf(packetBuffer.get(0)));

@@ -72,6 +72,10 @@ class UDPClient {
       data = new String(receivePacket.getData());
       System.out.println(data);
       transport.demux(data);
+      //start client thread if not already running
+      if(!clientThread.isAlive()){
+        clientThread.start();
+      }
 
       // create a new packet and try to receieve next data        
       receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -82,8 +86,7 @@ class UDPClient {
       }
     }
     // extract checksum from recieved message
-	
-    clientThread.start();
+
     Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
     long checksum = 0;
     if (matcher.find()) {
