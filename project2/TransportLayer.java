@@ -5,7 +5,7 @@ import java.io.*;
 
 public class TransportLayer implements Runnable
 {
-  ArrayList<Packet> buffer = new ArrayList<Packet>(); 
+  volatile ArrayList<Packet> buffer = new ArrayList<Packet>(); 
   DatagramSocket socket;
   int baseSeqNumber = 0;
   int nextSeqNumber = 0;
@@ -21,11 +21,7 @@ public class TransportLayer implements Runnable
   public void run(){
     while(true){
 	// if we've gotten here it means we've recieved all the packets in some form, now we just need to check if they're valid
-        if(buffer.size() == 0){
-		System.out.println("here");
-	}
-	
-	for(int i = 0; i < buffer.size() -1; i++) {
+	for(int i = 0; i < buffer.size() - 1; i++) {
 	 	
 		if(buffer.get(i).getACK() != 1){
 			// if a packet has arrived that hasnt been acknowledged, send ack
@@ -71,7 +67,9 @@ public class TransportLayer implements Runnable
     // create new packet with payload and header values, then
     // add the packet to the buffer
     Packet packet = new Packet(Integer.parseInt(headers[0]), payloadBytes, IPAddress, portNumber);
+    System.out.println(buffer.size());
     buffer.add(packet);
   }
+
 
 }

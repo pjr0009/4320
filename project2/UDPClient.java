@@ -42,8 +42,8 @@ class UDPClient {
       byte[] receiveData = new byte[512]; 
       
       // get http request from user
-      System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
-      System.out.print("Request: ");
+      //System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
+      // System.out.print("Request: ");
 	String request = "GET content/test3.html HTTP/1.0";
       //String request = inFromUser.readLine(); 
       sendData = request.getBytes();
@@ -61,17 +61,19 @@ class UDPClient {
   
       int i = 0;
       TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER);
-      (new Thread(transport)).start(); 
+      //Thread clientThread = new Thread(transport);
       // recieve first packet
       clientSocket.receive(receivePacket);
       String data = "";
+      System.out.println(receivePacket.getData());
       while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
         receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i, writer));
         i += 1;
         clientSocket.setSoTimeout(500);
         //extract checksum from recieved message
         data = new String(receivePacket.getData());
-        transport.demux(data);
+        System.out.println(data);
+	transport.demux(data);
         
 
         // create a new packet and try to receieve next data        
