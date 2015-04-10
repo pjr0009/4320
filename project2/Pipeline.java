@@ -30,37 +30,43 @@ public class Pipeline implements Runnable {
 			} catch(InterruptedException ex) {
 			    Thread.currentThread().interrupt();
 			}
-			System.out.println(packetBuffer.size());
-			int packetIndex = (Integer)window.peek();
-			Packet packet = packetBuffer.get(packetIndex);
-			if(packet.getACK() == 1){
-				try {
-					// inspect the packet at window base to see if it's been acked
-					window.take(); //consume
-					byte[] response = packet.getParsedResponse();
-					int responseLength = (int)(response.length);
-					try {
-						
-						System.out.println("\nPacket Index: " + packetIndex);
-						System.out.println("IP Address: " + packet.IPAddress);
-						System.out.println("PortNumber: " + packet.portNumber);
-						System.out.println("Sequence Number: " + packet.portNumber);
-						System.out.println("Sending Packet " + packetIndex + " ...");
-						serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
-						System.out.println("Packet " + packetIndex + " sent");
+			
+			synchronized(this){
+				try{
+					int packetIndex = (Integer)window.take();	
+					Packet packet = packetBuffer.get(packetIndex);
+					if(packet.getACK() != 1){
+						window.put(packetIndex);
 					}
-					catch (IOException e)
-					{
-						System.out.println(e);
+				
+				
+					if(packet.getACK() == 1){
+						// inspect the packet at window base to see if it's been acked
+						byte[] response = packet.getParsedResponse();
+						int responseLength = (int)(response.length);
+						try {
+							System.out.println("\nPacket Index: " + packetIndex);
+							System.out.println("IP Address: " + packet.IPAddress);
+							System.out.println("PortNumber: " + packet.portNumber);
+							System.out.println("Sequence Number: " + packet.portNumber);
+							System.out.println("Sending Packet " + packetIndex + " ...");
+							serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
+							System.out.println("Packet " + packetIndex + " sent");
+						}
+						catch (IOException e)
+						{
+							System.out.println(e);
+						}
+						System.out.println("Consume packet "+packetIndex);
+						 
+					} else {
+						packet.setACK("1");
 					}
-					System.out.println("Consume packet "+packetIndex);
+
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-				}
-			} else {
-				packet.setACK("1");
+			  }
 			}
-			// packetBuffer.remove(0);
 
 		}
 	}
