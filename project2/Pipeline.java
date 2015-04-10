@@ -25,6 +25,11 @@ public class Pipeline implements Runnable {
 	public void run()
 	{
 		while(true){
+			try {
+			    Thread.sleep(5000);
+			} catch(InterruptedException ex) {
+			    Thread.currentThread().interrupt();
+			}
 			System.out.println(packetBuffer.size());
 			int packetIndex = (Integer)window.peek();
 			Packet packet = packetBuffer.get(packetIndex);
@@ -34,11 +39,8 @@ public class Pipeline implements Runnable {
 					window.take(); //consume
 					byte[] response = packet.getParsedResponse();
 					int responseLength = (int)(response.length);
-					System.out.println(responseLength);
-					
 					try {
 						
-						System.out.println("Got Here3");
 						System.out.println("IP: " + packet.IPAddress);
 						System.out.println("PortNumber: " + packet.portNumber);
 						serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
@@ -55,30 +57,8 @@ public class Pipeline implements Runnable {
 			} else {
 				packet.setACK("1");
 			}
+			// packetBuffer.remove(0);
+
 		}
-
-
-		// //Dequeue packet from packetBuffer
-		// Packet packet = packetBuffer.get(0);
-		// window.add(packet);
-		// byte[] response = packet.getParsedResponse();
-		// int responseLength = (int)(response.length);
-		// System.out.println(responseLength);
-		
-		// try {
-			
-		// 	System.out.println("Got Here3");
-		// 	System.out.println("IP: " + packet.IPAddress);
-		// 	System.out.println("PortNumber: " + packet.portNumber);
-		// 	serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
-		// 	System.out.println("Packet sent");
-		// }
-		// catch (IOException e)
-		// {
-		// 	System.out.println(e);
-		// }
-		// // System.out.println("Pipeline Size: " + window.size());
-		// packetBuffer.remove(0);
-		// System.out.println(packetBuffer.size());
 	}
 }
