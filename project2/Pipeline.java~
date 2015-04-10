@@ -5,22 +5,23 @@ import java.io.IOException;
 public class Pipeline implements Runnable {
 
 	
-	ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
+	public volatile ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 	ArrayList<Packet> window = new ArrayList<Packet>();
 	InetAddress IpAddress;
 	int baseSeqNumber = 0;
 	int nextSeqNumber = 0;
 	DatagramSocket serverSocket;
 
-	public Pipeline(ArrayList<Packet> packetBuffer, DatagramSocket socketObjectIn)
+	public Pipeline(DatagramSocket socketObjectIn)
 	{
-		this.packetBuffer = packetBuffer;
 		this.serverSocket = socketObjectIn;
 	}
 
 	public void run()
 	{
+		System.out.println("Got Here1");
 		while (packetBuffer.size() > 0)
+				System.out.println("Got Here2");
 		{
 			//Check if there is an open slot in the window
 			if (window.size() < 8)
@@ -31,8 +32,14 @@ public class Pipeline implements Runnable {
 				byte[] response = packet.getParsedResponse();
 				int responseLength = (int)(response.length);
 				System.out.println(responseLength);
+				
 				try {
-					serverSocket.send(new DatagramPacket(response, responseLength, IpAddress, portNumber));
+					
+					System.out.println("Got Here3");
+					System.out.println("IP: " + packet.IPAddress);
+					System.out.println("PortNumber: " + packet.portNumber);
+					serverSocket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
+					System.out.println("Packet sent");
 				}
 				catch (IOException e)
 				{

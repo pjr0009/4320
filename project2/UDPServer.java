@@ -14,13 +14,12 @@ class UDPServer
 		final int PACKET_SIZE = 512;
 		int portNumber = 10046;
 		DatagramSocket serverSocket = new DatagramSocket(portNumber);
-		ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 		byte[] receiveData = new byte[1024]; 
 		byte[] sendData  = new byte[PACKET_SIZE];
 		System.out.println("LISTENING ON PORT: "+ portNumber);	
-		Pipeline pipeline = new Pipeline(packetBuffer, serverSocket);			
+		Pipeline pipeline = new Pipeline(serverSocket);			
 		//Create a new pipline thread
-		(new Thread(pipeline)).start();	
+		Thread thread = new Thread(pipeline);	
 		while(true)
 		{
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -47,7 +46,7 @@ class UDPServer
 
 			//serverSocket.send(new DatagramPacket(sendData, 0, length, IPAddress, port));
 			int snBase = 0;
-			packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
+			pipeline.packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 			snBase++;
 			offset += PACKET_SIZE;
 			while(offset < sendData.length){
@@ -55,20 +54,19 @@ class UDPServer
 				long remainingBytes = sendData.length - offset;
 				if(remainingBytes < PACKET_SIZE){
 					length = (int)remainingBytes;
-					//serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
-					packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
+					pipeline.packetBuffer.add(new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 					snBase++;
 					break;			
 				}
 				else{
-					//serverSocket.send(new DatagramPacket(sendData, offset, length, IPAddress, port));
-					packetBuffer.add(new Packet(snBase, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
+					pipeline.packetBuffer.add(new Packet(snBase, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port));
 
 					offset += PACKET_SIZE;
 					snBase++;
 				}
 			}
 			
+			thread.start();
 
 			rh.logRequestComplete();
 		} 

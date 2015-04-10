@@ -10,7 +10,7 @@ public class Packet
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
 	public int portNumber;
-	InetAddress IPAddress;
+	public InetAddress IPAddress;
 	
 	
 	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IPAddressIn, int portIn)
