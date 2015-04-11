@@ -23,7 +23,7 @@ class RequestHandler {
 		contentType = "text/plain";
 	}
 
-	public int requestValidator()
+	public int validate()
 	{
 		String[] messageSections = new String[3];
 		messageSections = request.split(" ");
@@ -61,15 +61,15 @@ class RequestHandler {
     	}
 
 	public String parsedResponse() {
-		requestValidator();
+		validate();
 	 			
-		String testResponse = "";
-		testResponse += specification;
-		testResponse += " " + responseCode;
-		testResponse += " Document Follows " + '\r' + '\n';
-		testResponse += "Content-Type: " + contentType + '\r' + '\n';
-		testResponse += "Content-Length: " + contentLength + '\r' + '\n';
-		testResponse += '\r' + '\n' + '\0';
+		String response = "";
+		response += specification;
+		response += " " + responseCode;
+		response += " Document Follows " + '\r' + '\n';
+		response += "Content-Type: " + contentType + '\r' + '\n';
+		response += "Content-Length: " + contentLength + '\r' + '\n';
+		response += '\r' + '\n' + '\0';
 		
 		if (responseCode == 200)
 		{
@@ -77,7 +77,7 @@ class RequestHandler {
 			try{			
 			for (String line : Files.readAllLines(Paths.get(fileName), charset))
 			{
-    				testResponse += line;
+    				response += line;
 			}
 			}
 			catch (IOException e)
@@ -85,8 +85,8 @@ class RequestHandler {
 				System.out.println(e);
 			}
 		}
-	
-		return testResponse;
+		logRequest();
+		return response;
 		
 	}
 

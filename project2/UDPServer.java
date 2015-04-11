@@ -14,14 +14,14 @@ class UDPServer
 		BlockingQueue<Integer> window = new ArrayBlockingQueue<Integer>(8); // blocking window, consumer
   	
 		// this is the list of all packets for all requests that are awaiting to go out
-  	ArrayList<Integer> packetBuffer = new ArrayList<Integer>();
+  	ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 
 		//
 		final int PACKET_SIZE = 512;
 		final int SERVER_PORT_NUMBER = 10046;
 		DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT_NUMBER);
-		byte[] receiveData = new byte[1024]; 
-		byte[] sendData  = new byte[PACKET_SIZE];
+		byte[] requestBuffer = new byte[PACKET_SIZE]; 
+		byte[] fileStreamBuffer  = new byte[PACKET_SIZE];
 		System.out.println("LISTENING ON PORT: "+ SERVER_PORT_NUMBER);	
 
 
@@ -44,7 +44,7 @@ class UDPServer
 
 
 		while(true) {
-			producer.packetBuffer.add(producer.packetBuffer.size());
+			// producer.packetBuffer.add();
       try {
         Thread.sleep(1000);
 
@@ -52,61 +52,59 @@ class UDPServer
         System.out.println(e);
       }
 
-		// 	DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-		// 	serverSocket.receive(receivePacket);
-
-		// 	String sentence = new String(receivePacket.getData()); 
-		// 	InetAddress IPAddress = receivePacket.getAddress(); 
-		// 	RequestHandler rh  = new RequestHandler(sentence);
-		// 	int port = receivePacket.getPort();
-		// 	rh.requestValidator();			
-		// 	rh.logRequest();
-
-		// 	sendData = rh.checkSummedResponse().getBytes("UTF-8");
- 	  //           		int offset = 0;
-		// 	int length = 0;
 			
-		// 	System.out.println("Total message length: " + sendData.length);
+      //create a new udp packet
+			DatagramPacket incomingRequest = new DatagramPacket(requestBuffer, requestBuffer.length);
+			
+			//wait for server socket to recieve incoming request
+			serverSocket.receive(incomingRequest);
+      System.out.println("here");
 
-		// 	if(sendData.length < PACKET_SIZE){
-		// 		length = sendData.length;
-		// 	} else{
-		// 		length = PACKET_SIZE;				
-		// 	}
+		  // parse the incoming GET request
+		  String requestText = new String(incomingRequest.getData()); 
+			
+			// create a request handler object which will
+			RequestHandler requestHandler  = new RequestHandler(requestText);
 
-		// 	//serverSocket.send(new DatagramPacket(sendData, 0, length, IPAddress, port));
-		// 	int snBase = 0;
-		// 	Packet packet = new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port);
-		// 	consumer.packetBuffer.add(packet);
-		// 	System.out.println("IP Address: " + packet.IPAddress);
-		// 	System.out.println("PortNumber: " + packet.portNumber);
-		// 	System.out.println("Sequence Number: " + packet.portNumber+ "\n\n");
-		// 	snBase++;
-		// 	offset += PACKET_SIZE;
-		// 	while(offset < sendData.length){
-		// 		// get how many bytes are left to send
-		// 		long remainingBytes = sendData.length - offset;
-		// 		if(remainingBytes < PACKET_SIZE){
-		// 			length = (int)remainingBytes;
-		// 			packet = new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port);
-		// 			System.out.println("IP Address: " + packet.IPAddress);
-		// 			System.out.println("PortNumber: " + packet.portNumber);
-		// 			System.out.println("Sequence Number: " + packet.portNumber + "\n\n");
-		// 			consumer.packetBuffer.add(packet);
-		// 			snBase++;
-		// 			break;			
-		// 		}
-		// 		else{
-		// 			packet = new Packet(snBase%24, Arrays.copyOfRange(sendData, offset, offset + PACKET_SIZE), IPAddress, port);
-		// 			System.out.println("IP Address: " + packet.IPAddress);
-		// 			System.out.println("PortNumber: " + packet.portNumber);
-		// 			System.out.println("Sequence Number: " + packet.portNumber + "\n\n");
-		// 			consumer.packetBuffer.add(packet);
 
-		// 			offset += PACKET_SIZE;
-		// 			snBase++;
-		// 		}
-		// 	}
+			fileStreamBuffer = requestHandler.checkSummedResponse().getBytes("UTF-8");
+
+			InetAddress ip = incomingRequest.getAddress(); 
+		 	int port = incomingRequest.getPort();
+
+ 
+			
+			System.out.println("Total message length: " + fileStreamBuffer.length);
+
+	    
+			// now that we've sucessfully interpreted the request, and created the entire http response
+			// we can begin breaking this response up into packets, and pipelining them out to the client
+			// process
+	    int offset = 0;
+		 	int length = 0;
+			if(fileStreamBuffer.length < PACKET_SIZE){
+				length = fileStreamBuffer.length;
+			} else{
+				length = PACKET_SIZE;				
+			}
+
+			int sequenceNumber = 0;
+
+			boolean done = false;
+			while(offset < fileStreamBuffer.length && (done == false)){
+		  	// get how many bytes are left to send
+				long remainingBytes = fileStreamBuffer.length - offset;
+				if(remainingBytes < PACKET_SIZE){
+					length = (int)remainingBytes;
+					done = true;
+				}
+				// create a packet object
+				Packet packet = new Packet(sequenceNumber%24, Arrays.copyOfRange(fileStreamBuffer, offset, offset + PACKET_SIZE), ip, port);
+				// add it to the producers queue of outgoing packets
+				producer.packetBuffer.add(packet);	
+				offset += PACKET_SIZE;
+				sequenceNumber++;			
+			}
 			
 		// 	while(consumer.packetBuffer.size() > 0){
 		// 		// add level of inderection so that when we update packets to acked they can be updated in the queue
