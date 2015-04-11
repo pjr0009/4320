@@ -8,7 +8,8 @@ CLASSES = \
 		UDPServer.java \
 		UDPClient.java \
 		TransportLayer.java \
-		Pipeline.java \
+		ServerConsumer.java \
+		ServerProducer.java \
 		Packet.java \
 		RequestHandler.java
 
