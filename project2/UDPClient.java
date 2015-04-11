@@ -7,6 +7,8 @@ import java.util.zip.Checksum;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.PrintWriter;
+import java.util.concurrent.*;
+
 
 
 
@@ -82,7 +84,7 @@ class UDPClient {
       }
     }
     // extract checksum from recieved message
-	
+	  System.out.println("");
     clientThread.start();
     Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
     long checksum = 0;
