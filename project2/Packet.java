@@ -1,93 +1,85 @@
 import java.net.*;
 
-public class Packet 
-{
+public class Packet {
 	//Class variables
 	boolean ACK = false;
-	boolean NAK = false;	
+	boolean NAK = false;
+	boolean queued = false;
 	int sequenceNumber;
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
 	public int portNumber;
 	public InetAddress IPAddress;
-	
-	
-	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IPAddressIn, int portIn)
-	{
+
+
+	public Packet(int sequenceNumberIn, byte[] payloadIn, InetAddress IPAddressIn, int portIn) {
 		this.sequenceNumber = sequenceNumberIn;
 		this.payload = payloadIn;
 		this.IPAddress = IPAddressIn;
 		this.portNumber = portIn;
 	}
 
-        public Packet(int sequenceNumberIn)
-        {
-                this.ACK = false;
-                this.NAK = false;
-                this.sequenceNumber = sequenceNumberIn;
+	public Packet(int sequenceNumberIn) {
+		this.ACK = false;
+		this.NAK = false;
+		this.sequenceNumber = sequenceNumberIn;
 		this.payload = null;
-        }
+	}
 
 
-
-	public void setACK(String arg)
-	{
-		if (arg.equals("1"))
-		{	
-			this.ACK = true;
+	public boolean isQueueable() {
+		if((getACK() == 0) && (getNAK() == 0) && (queued == false)){
+			return true;
+		} else {
+			return false;
 		}
-		else
-		{
+	}
+
+	public void setACK(String arg) {
+		if (arg.equals("1")) {
+			this.ACK = true;
+		} else {
 			this.ACK = false;
 		}
 	}
 
-	public void setNAK(String arg)
-	{
-		if (arg.equals("1"))
-		{		
+	public void setNAK(String arg) {
+		if (arg.equals("1")) {
 			this.NAK = true;
-		}
-		else
-		{
+		} else {
 			this.NAK = false;
 		}
 	}
 
-	public int getACK()
-	{	
-		
+	public int getACK() {
+
 		return (ACK ? 1 : 0);
 	}
 
-	public int getNAK()
-	{
+	public int getNAK() {
 		return (this.NAK ? 1 : 0);
 	}
-	
-	public byte[] getParsedResponse()
-	{
+
+	public byte[] getParsedResponse() {
 		//Format: Sequence Number, ACK, NAK, Checksum
-		String response = "START:";		
+		String response = "START:";
 		response += sequenceNumber;
 		response += "," + getACK();
 		response += "," + getNAK();
 		response += "," + computeChecksum() + ":END";
-		if(payload != null){
+		if (payload != null) {
 			response += (new String(payload));
 		}
 		return response.getBytes();
 	}
-	
-	public long computeChecksum()
-	{
+
+	public long computeChecksum() {
 		return 1;
 	}
-	
-	public int getSequenceNumber()
-	{
+
+	public int getSequenceNumber() {
 		return this.sequenceNumber;
 	}
-	
+
 }

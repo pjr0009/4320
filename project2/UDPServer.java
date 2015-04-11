@@ -28,7 +28,7 @@ class UDPServer
 
 		// consumer object which will consume packets from the producer thread
 		// a new packet should be consumed (enqueued) when the window advances
-		ServerConsumer consumer = new ServerConsumer(serverSocket, window);
+		ServerConsumer consumer = new ServerConsumer(serverSocket, packetBuffer, window);
 
 		// when we recieve a request, the goal is to retrieve the file, break it up into packets,
 		// then add it to the buffer of all the packets scheduled to go out, as the window advances,
@@ -52,7 +52,7 @@ class UDPServer
         System.out.println(e);
       }
 
-			
+
       //create a new udp packet
 			DatagramPacket incomingRequest = new DatagramPacket(requestBuffer, requestBuffer.length);
 			
@@ -101,7 +101,7 @@ class UDPServer
 				// create a packet object
 				Packet packet = new Packet(sequenceNumber%24, Arrays.copyOfRange(fileStreamBuffer, offset, offset + PACKET_SIZE), ip, port);
 				// add it to the producers queue of outgoing packets
-				producer.packetBuffer.add(packet);	
+				packetBuffer.add(packet);	
 				offset += PACKET_SIZE;
 				sequenceNumber++;			
 			}
