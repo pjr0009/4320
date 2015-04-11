@@ -37,7 +37,6 @@ class UDPClient {
 
     InetAddress IPAddress = InetAddress.getByName(InetAddr);
 
-    // use an array list for recieve data here, we want our packets to be stored
     byte[] sendData = new byte[1024];
     byte[] receiveData = new byte[512];
 
@@ -54,18 +53,21 @@ class UDPClient {
 
     clientSocket.send(sendPacket);
 
+    
+    // Now that we've sent out the request, we need to recieve all the data
     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
     File file = new File("Output.html");
     PrintWriter writer = new PrintWriter(file, "UTF-8");
 
     int i = 0;
+    
     TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER);
     Thread clientThread = new Thread(transport);
     // recieve first packet
     clientSocket.receive(receivePacket);
+    clientThread.start();
     String data = "";
-    System.out.println(receivePacket.getData());
     while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
       receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i, writer));
       i += 1;
@@ -85,7 +87,6 @@ class UDPClient {
     }
     // extract checksum from recieved message
 	  System.out.println("");
-    clientThread.start();
     Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
     long checksum = 0;
     if (matcher.find()) {

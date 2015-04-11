@@ -6,7 +6,7 @@ import java.util.concurrent.*;
 
 
 public class TransportLayer implements Runnable {
-  volatile ArrayList < Packet > buffer = new ArrayList < Packet > ();
+  public volatile ArrayList < Packet > buffer = new ArrayList < Packet > ();
   DatagramSocket socket;
   int baseSeqNumber = 0;
   // int nextSeqNumber = 0;
@@ -22,32 +22,31 @@ public class TransportLayer implements Runnable {
 
   public void run() {
     while (true) {
-      // if we've gotten here it means we've recieved all the packets in some form, now we just need to check if they're valid
-      for (int i = baseSeqNumber; i < baseSeqNumber + 8; i++) {
-        if (buffer.get(i).getACK() != 1) {
-          // if a packet has arrived that hasnt been acknowledged, send ack
-          System.out.println("Base Seq Number "+baseSeqNumber);
-          System.out.println("Seq Number End"+baseSeqNumber+8);
-
-
-          System.out.println("Sending ack for packet in window at index "+i);
-          Packet current_packet = buffer.get(i);
-          Packet ack = new Packet(current_packet.sequenceNumber);
-          buffer.get(i).setACK("1");
-          ack.setACK("1");
-          byte[] response = ack.getParsedResponse();
-          int responseLength = response.length;
-          try {
-            System.out.println("Sending ACK");
+      if(buffer.size() > 0){
+        for (int i = baseSeqNumber; i < baseSeqNumber + 8; i++) {
+          if (buffer.get(i).getACK() != 1) {
+            // if a packet has arrived that hasnt been acknowledged, send ack
+            System.out.println("Base Seq Number "+baseSeqNumber);
+            System.out.println("Seq Number End "+baseSeqNumber+8);
+            System.out.println("Sending ack for packet in window at index "+i);
+            Packet current_packet = buffer.get(i);
+            Packet ack = new Packet(current_packet.sequenceNumber);
+            buffer.get(i).setACK("1");
+            ack.setACK("1");
+            byte[] response = ack.getParsedResponse();
+            int responseLength = response.length;
             try {
-              wait(5000);
-            } catch (InterruptedException e) {
+              System.out.println("Sending ACK");
+              try {
+                Thread.sleep(5000);
+              } catch (InterruptedException e) {
+                System.out.println(e);
+              }
+              socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
+
+            } catch (IOException e) {
               System.out.println(e);
             }
-            socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
-
-          } catch (IOException e) {
-            System.out.println(e);
           }
         }
       }

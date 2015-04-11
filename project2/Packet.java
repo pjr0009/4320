@@ -5,7 +5,7 @@ public class Packet {
 	boolean ACK = false;
 	boolean NAK = false;
 	boolean queued = false;
-	int sequenceNumber;
+	int sequenceNumber = -1;
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
 	long checksumValue;
@@ -30,6 +30,13 @@ public class Packet {
 
 	public boolean isQueueable() {
 		if((getACK() == 0) && (getNAK() == 0) && (queued == false)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	public boolean isHTTP(){
+		if((getACK()==0) && (getNAK() == 0) && (sequenceNumber == -1)){
 			return true;
 		} else {
 			return false;

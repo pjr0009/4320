@@ -5,11 +5,13 @@ import java.util.concurrent.*;
 class ServerProducer implements Runnable {
   private BlockingQueue<Integer> window;
   public volatile ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
+  DatagramSocket socket;
   private int nextPacket = 0;
 
-  public ServerProducer(ArrayList<Packet> packetBufferIn, BlockingQueue<Integer> windowIn){
+  public ServerProducer(DatagramSocket socketIn,  ArrayList<Packet> packetBufferIn, BlockingQueue<Integer> windowIn){
     this.window = windowIn;
     this.packetBuffer = packetBufferIn;
+    this.socket = socketIn;
 
   }
 
@@ -26,10 +28,30 @@ class ServerProducer implements Runnable {
             // like setting the ack, because we can select randomly from a queue
             int nextPacketIndex = findPacketCandidate();
             if(nextPacketIndex > -1){
-              Packet p = packetBuffer.get(nextPacketIndex);
-              p.queued = true;
-              System.out.println("Adding packet #" + p.sequenceNumber + " to the window." );
-              window.put(p.sequenceNumber);
+              Packet packet = packetBuffer.get(nextPacketIndex);
+              packet.queued = true;
+              System.out.println("Adding packet #" + packet.sequenceNumber + " to the window." );
+              window.put(packet.sequenceNumber);
+              
+              // now we actually need to send out the added packet
+              byte[] response = packet.getParsedResponse();
+              int responseLength = (response.length);
+              try {
+               System.out.println("SENDING NEW PACKET");
+               System.out.println("IP Address: " + packet.IPAddress);
+               System.out.println("PortNumber: " + packet.portNumber);
+               System.out.println("Sequence Number: " + packet.portNumber);
+               System.out.println("Sending Packet " + packet.sequenceNumber + " ...");
+               socket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
+               System.out.println("Packet " + packet.sequenceNumber + " sent");
+              }
+              catch (IOException e)
+              {
+               System.out.println(e);
+              }
+
+
+
 
             }
           }

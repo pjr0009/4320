@@ -4,6 +4,8 @@ import java.nio.charset.Charset;
 import java.io.IOException;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
+import java.util.regex.*;
+import java.net.*;
 
 class RequestHandler { 
 
@@ -21,6 +23,47 @@ class RequestHandler {
 	{
 		request = inputRequest;
 		contentType = "text/plain";
+	}
+
+
+	public Packet parseIncomingRequest(InetAddress IPAddressIn, int portNumberIn){
+		System.out.println("new request occurred");
+    String headerString = "";
+    String fullHeaderString = "";
+    String payload = "";
+    Matcher headerMatcher = Pattern.compile("START:(.+?):END").matcher(request);
+
+    if (headerMatcher.find()) {
+      headerString = headerMatcher.group(1);
+      // extract the whole header from "START to END" 
+      fullHeaderString = headerMatcher.group(0);
+    }
+
+    String[] headers = headerString.split(",");
+    // Extract the data of the packet by removing the fullHeaderString
+    payload = request.replace(fullHeaderString, "");
+
+    // set the request handler's requst field to the payload. in the event that its just an http request.
+    request = payload;
+
+    byte[] payloadBytes = payload.getBytes();
+    // create new packet with payload and header values, then
+    // add the packet to the buffer
+    int sequenceNumber = -1;
+    if(headers[0] != ""){
+    	sequenceNumber = Integer.parseInt(headers[0]);
+    }
+    Packet packet = new Packet(sequenceNumber, payloadBytes, IPAddressIn, portNumberIn);
+    if(headers.length >= 2){
+    	packet.setACK(headers[1]);
+    	packet.setNAK(headers[2]);
+    }
+    System.out.println("IP Address: " + packet.IPAddress);
+    System.out.println("PortNumber: " + packet.portNumber);
+    System.out.println("Sequence Number: " + packet.sequenceNumber);
+    System.out.println("ACK: " + packet.getACK());
+    System.out.println("NAK: " + packet.getNAK());
+    return packet;
 	}
 
 	public int validate()
@@ -62,7 +105,6 @@ class RequestHandler {
 
 	public String parsedResponse() {
 		validate();
-	 			
 		String response = "";
 		response += specification;
 		response += " " + responseCode;
