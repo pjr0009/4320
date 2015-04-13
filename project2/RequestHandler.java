@@ -27,7 +27,6 @@ class RequestHandler {
 
 
 	public Packet parseIncomingRequest(InetAddress IPAddressIn, int portNumberIn){
-		System.out.println("new request occurred");
     String headerString = "";
     String fullHeaderString = "";
     String payload = "";
@@ -58,11 +57,7 @@ class RequestHandler {
     	packet.setACK(headers[1]);
     	packet.setNAK(headers[2]);
     }
-    System.out.println("IP Address: " + packet.IPAddress);
-    System.out.println("PortNumber: " + packet.portNumber);
-    System.out.println("Sequence Number: " + packet.sequenceNumber);
-    System.out.println("ACK: " + packet.getACK());
-    System.out.println("NAK: " + packet.getNAK());
+
     return packet;
 	}
 

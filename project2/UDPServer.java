@@ -45,12 +45,12 @@ class UDPServer
 
 		while(true) {
 			// producer.packetBuffer.add();
-      try {
-        Thread.sleep(1000);
+      // try {
+      //   Thread.sleep(1000);
 
-      } catch(InterruptedException e){
-        System.out.println(e);
-      }
+      // } catch(InterruptedException e){
+      //   System.out.println(e);
+      // }
 
 
       //create a new udp packet

@@ -57,8 +57,7 @@ class UDPClient {
     // Now that we've sent out the request, we need to recieve all the data
     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
-    File file = new File("Output.html");
-    PrintWriter writer = new PrintWriter(file, "UTF-8");
+
 
     int i = 0;
     
@@ -69,12 +68,11 @@ class UDPClient {
     clientThread.start();
     String data = "";
     while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
-      receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i, writer));
+      receivePacket.setData(gremlin(gremlinProbabilty, receivePacket.getData(), i));
       i += 1;
       clientSocket.setSoTimeout(50000);
       //extract checksum from recieved message
       data = new String(receivePacket.getData());
-      System.out.println(data);
       transport.demux(data);
 
       // create a new packet and try to receieve next data        
@@ -86,7 +84,6 @@ class UDPClient {
       }
     }
     // extract checksum from recieved message
-	  System.out.println("");
     Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
     long checksum = 0;
     if (matcher.find()) {
@@ -105,8 +102,7 @@ class UDPClient {
       System.out.println("Checksum verification failed! computed: " + computedChecksum);
 
     }
-    writer.println(data);
-    writer.close();
+
 
     clientSocket.close();
   }
@@ -131,7 +127,7 @@ class UDPClient {
   }
 
 
-  public static byte[] gremlin(double inputProbability, byte byteArray[], int packet_sequence_number, PrintWriter print) {
+  public static byte[] gremlin(double inputProbability, byte byteArray[], int packet_sequence_number) {
     double damageProbability = inputProbability;
     Random randomGenerator = new Random();
     double randomDouble = randomGenerator.nextDouble();
@@ -170,7 +166,7 @@ class UDPClient {
         byteArray[randomInt] = (byte) indexElement;
       }
       //The packet was corrupted.
-      print.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
+      System.out.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
       return byteArray;
     } else {
       //Gremlin function does not corrupt the file        

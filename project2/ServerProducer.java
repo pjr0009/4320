@@ -1,7 +1,10 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.net.*;
 import java.io.IOException;
 import java.util.concurrent.*;
+import java.util.Collections;
+
 class ServerProducer implements Runnable {
   private BlockingQueue<Integer> window;
   public volatile ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
@@ -27,23 +30,19 @@ class ServerProducer implements Runnable {
             // itself so that we can arbitrarily update attributes on packets 
             // like setting the ack, because we can select randomly from a queue
             int nextPacketIndex = findPacketCandidate();
+
             if(nextPacketIndex > -1){
               Packet packet = packetBuffer.get(nextPacketIndex);
               packet.queued = true;
-              System.out.println("Adding packet #" + packet.sequenceNumber + " to the window." );
               window.put(packet.sequenceNumber);
               
               // now we actually need to send out the added packet
               byte[] response = packet.getParsedResponse();
               int responseLength = (response.length);
               try {
-               System.out.println("SENDING NEW PACKET");
-               System.out.println("IP Address: " + packet.IPAddress);
-               System.out.println("PortNumber: " + packet.portNumber);
-               System.out.println("Sequence Number: " + packet.portNumber);
-               System.out.println("Sending Packet " + packet.sequenceNumber + " ...");
                socket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
-               System.out.println("Packet " + packet.sequenceNumber + " sent");
+               updateInterface();
+              
               }
               catch (IOException e)
               {
@@ -55,12 +54,34 @@ class ServerProducer implements Runnable {
 
             }
           }
-          Thread.sleep(1000);
+          // Thread.sleep(1000);
 
         } catch(InterruptedException e){
           System.out.println(e);
         }
       }
+    }
+
+  }
+
+  public void updateInterface(){
+    Object[] sequenceNumbers = window.toArray();
+    
+    // clear window attribution: http://stackoverflow.com/questions/4888362/commands-in-java-to-clear-the-screen
+    final String ANSI_CLS = "\u001b[2J";
+    final String ANSI_HOME = "\u001b[H";
+    System.out.print(ANSI_CLS + ANSI_HOME);
+    System.out.flush();
+    String header = "";
+    for(int i = 0; i < 70; i++){
+      header += "*";
+    }
+    System.out.println(header);
+    System.out.print("WINDOW: ");
+    System.out.println(Arrays.toString(sequenceNumbers));
+    System.out.print("PACKETS LEFT TO SEND: ");
+    for(int i =0; i < packetBuffer.size(); i++){
+      System.out.print(" " +packetBuffer.get(i).sequenceNumber);
     }
 
   }

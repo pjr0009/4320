@@ -41,11 +41,11 @@ public class ServerConsumer implements Runnable {
 						int indexOfPacket = findBySequenceNumber(sequenceNumber);
 						if(indexOfPacket > -1){
 							Packet p = packetBuffer.get(indexOfPacket);
-							System.out.println("Inspecting packet with seq #"+ p.sequenceNumber + " for ack");
 							// means it's been ack'd and can remove
 							// otherwise, new packet, send.
 							if (p.getACK() == 1){
 								// means that we haven't ack'd the packet yet, so the window needn't advance
+								packetBuffer.remove(indexOfPacket);
 								window.take(); // consume
 							}
 						}
@@ -55,11 +55,11 @@ public class ServerConsumer implements Runnable {
 					}
 
 				}
-				try{
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					System.out.println(e);
-				}
+				// try{
+				// 	Thread.sleep(1000);
+				// } catch (InterruptedException e) {
+				// 	System.out.println(e);
+				// }
 			}
 		}
 	}
