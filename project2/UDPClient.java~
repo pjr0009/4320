@@ -93,7 +93,6 @@ class UDPClient {
         }
        }
     }
-  /** Section Start */
     // extract checksum from recieved message
     Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
     long checksum = 0;
@@ -113,7 +112,6 @@ class UDPClient {
       System.out.println("Checksum verification failed! computed: " + computedChecksum);
 
     }
-  /** Section end: (?)May have to move this code into the above while loop if we are checking each packet for loss/corruptness */
 
 
     clientSocket.close();
