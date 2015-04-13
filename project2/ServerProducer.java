@@ -40,9 +40,8 @@ class ServerProducer implements Runnable {
               byte[] response = packet.getParsedResponse();
               int responseLength = (response.length);
               try {
-               socket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
-               updateInterface();
-              
+                socket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
+                updateInterface();
               }
               catch (IOException e)
               {
