@@ -41,7 +41,7 @@ class UDPClient {
     InetAddress IPAddress = InetAddress.getByName(InetAddr);
 
     byte[] sendData = new byte[1024];
-    byte[] receiveData = new byte[512];
+    byte[] receiveData = new byte[1024];
 
     // get http request from user
     //System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
@@ -56,14 +56,14 @@ class UDPClient {
 
     clientSocket.send(sendPacket);
 
-    
+
     // Now that we've sent out the request, we need to recieve all the data
     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
 
 
     int i = 0;
-    
+
     TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER);
     Thread clientThread = new Thread(transport);
     // recieve first packet
@@ -73,17 +73,15 @@ class UDPClient {
     while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
       byte[] gremlinBytes = gremlin(gremlinDamageProbability, gremlinLossProbability, receivePacket.getData(), i);
       if (gremlinBytes == null) {
-	//TODO: The packet was lost     
-	//The Server needs to resend the packet 
-      }
-      else {
-	receivePacket.setData(gremlinBytes);
+        //TODO: The packet was lost     
+        //The Server needs to resend the packet
+      } else {
+        // receivePacket.setData(gremlinBytes);
         i += 1;
         clientSocket.setSoTimeout(50000);
         //extract checksum from recieved message
         data = new String(receivePacket.getData());
-       transport.demux(data);
-
+        transport.demux(data); 
         // create a new packet and try to receieve next data        
         receivePacket = new DatagramPacket(receiveData, receiveData.length);
         try {
@@ -91,29 +89,29 @@ class UDPClient {
         } catch (SocketTimeoutException e) {
           break;
         }
-       }
+      }
     }
-  /** Section Start */
-    // extract checksum from recieved message
-    Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
-    long checksum = 0;
-    if (matcher.find()) {
-      String someNumberStr = matcher.group(1);
+    // /** Section Start */
+    // // extract checksum from recieved message
+    // Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
+    // long checksum = 0;
+    // if (matcher.find()) {
+    //   String someNumberStr = matcher.group(1);
 
-      checksum = Long.parseLong(someNumberStr.trim());
-    }
-    // strip out checksum field 
-    data = data.replaceAll("(Checksum: +[0-9].*)", "");
+    //   checksum = Long.parseLong(someNumberStr.trim());
+    // }
+    // // strip out checksum field 
+    // data = data.replaceAll("(Checksum: +[0-9].*)", "");
 
-    long computedChecksum = computeChecksum(data);
+    // long computedChecksum = computeChecksum(data);
 
-    if (computedChecksum == checksum) {
-      System.out.println("Checksum verification passed! recieved: " + checksum + " computed: " + computedChecksum);
-    } else {
-      System.out.println("Checksum verification failed! computed: " + computedChecksum);
+    // if (computedChecksum == checksum) {
+    //   System.out.println("Checksum verification passed! recieved: " + checksum + " computed: " + computedChecksum);
+    // } else {
+    //   System.out.println("Checksum verification failed! computed: " + computedChecksum);
 
-    }
-  /** Section end: (?)May have to move this code into the above while loop if we are checking each packet for loss/corruptness */
+    // }
+    /** Section end: (?)May have to move this code into the above while loop if we are checking each packet for loss/corruptness */
 
 
     clientSocket.close();
@@ -149,7 +147,10 @@ class UDPClient {
       randomDouble = randomGenerator.nextDouble();
     }
 
-    if (randomDouble <= damageProbability) {
+    if (randomDouble <= lossProbability) {
+      return null;
+    }
+    else if (randomDouble <= damageProbability) {
       int numBytesChanged = 0;
 
       //Gremlin function corrupts the file
@@ -167,10 +168,6 @@ class UDPClient {
       else {
         //change three bytes
         numBytesChanged = 3;
-      }
-
-      if (randomDouble <= lossProbability) {
-      	return null;
       }
       //Change however many number of bytes needs to be changed (at random)
       int randomInt;

@@ -85,7 +85,7 @@ class UDPServer
 
 			} else { 
 
-				fileStreamBuffer = requestHandler.checkSummedResponse().getBytes("UTF-8");
+				fileStreamBuffer = requestHandler.parsedResponse().getBytes("UTF-8");
 
 
 	 

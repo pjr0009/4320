@@ -140,7 +140,6 @@ class RequestHandler {
         long checksumValue = checksum.getValue();
 
         //append checksum
-        response += new String( ("Checksum: " + checksumValue) );
         return response;
 
 

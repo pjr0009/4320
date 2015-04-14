@@ -46,17 +46,17 @@ public class TransportLayer implements Runnable {
               // if a packet has arrived that hasnt been acknowledged, send ack
               try {
                 Packet current_packet = buffer.take();
+                updateInterface();
                 packetCount += 1;
                 current_packet.setACK("1");
                 Packet ack = new Packet(current_packet.sequenceNumber);
                 ack.setACK("1");
                 byte[] response = ack.getParsedResponse();
                 int responseLength = response.length;
-                updateInterface();
                 socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
-                baseSeqNumber += 1;
 
-                if(true || current_packet.sequenceNumber == baseSeqNumber){
+                if(current_packet.sequenceNumber == baseSeqNumber%24){
+                  baseSeqNumber += 1;
                   writer.append(new String(current_packet.payload));
                   writer.flush();
                   Thread.sleep(250);
@@ -67,7 +67,14 @@ public class TransportLayer implements Runnable {
               }
             }
           // }
-        }
+          } else {
+            try {
+              updateInterface();
+              Thread.sleep(500);
+            } catch(Exception e){
+              System.out.println(e);
+            }
+          }
       }
     }
   }
@@ -92,8 +99,22 @@ public class TransportLayer implements Runnable {
       Packet p = (Packet)packetArray[i];
       System.out.print(" " + p.sequenceNumber);
     }
+    System.out.print("\nSENT CHECKSUMS:     ");
+
+
+    for(int i = 0; i < packetArray.length; i++){
+      Packet p = (Packet)packetArray[i];
+      System.out.print(" " + p.checksum);
+    }
+    System.out.print("\nCOMUPTED CHECKSUMS: ");
+    for(int i = 0; i < packetArray.length; i++){
+      Packet p = (Packet)packetArray[i];
+      System.out.print(" " + p.computeChecksum());
+    }
     System.out.println("");
     System.out.println("Total Packets Recieved: " + packetCount);
+    System.out.println("Current Base Sequence Number: " + baseSeqNumber);
+    
 
   }
 
@@ -118,6 +139,7 @@ public class TransportLayer implements Runnable {
     // create new packet with payload and header values, then
     // add the packet to the buffer
     Packet packet = new Packet(Integer.parseInt(headers[0]), payloadBytes, IPAddress, portNumber);
+    packet.checksum = Long.parseLong(headers[3]);
     try{
       buffer.put(packet);
     } catch (Exception e) {

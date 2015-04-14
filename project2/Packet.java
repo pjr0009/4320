@@ -1,4 +1,6 @@
 import java.net.*;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 public class Packet {
 	//Class variables
@@ -8,7 +10,7 @@ public class Packet {
 	int sequenceNumber = -1;
 	final int PACKET_SIZE = 512;
 	byte[] payload = new byte[PACKET_SIZE];
-	long checksumValue;
+	long checksum;
 	public int portNumber;
 	public InetAddress IPAddress;
 
@@ -82,7 +84,19 @@ public class Packet {
 	}
 
 	public long computeChecksum() {
-		return 1;
+    // parse response into bytestream
+    if (getACK()==1){ return 0;}
+    System.out.println(new String(payload));
+    byte[] bytes = payload;
+    //create checksum object.
+    Checksum checksum = new CRC32();
+    checksum.update(bytes, 0, bytes.length);
+
+    // get checksum value
+    long checksumValue = checksum.getValue();
+
+    return checksumValue;
+
 	}
 
 	public int getSequenceNumber() {
