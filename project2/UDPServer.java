@@ -28,7 +28,7 @@ class UDPServer
 
 		// consumer object which will consume packets from the producer thread
 		// a new packet should be consumed (enqueued) when the window advances
-		ServerConsumer consumer = new ServerConsumer(packetBuffer, window);
+		ServerConsumer consumer = new ServerConsumer(serverSocket, packetBuffer, window);
 
 		// when we recieve a request, the goal is to retrieve the file, break it up into packets,
 		// then add it to the buffer of all the packets scheduled to go out, as the window advances,
@@ -77,8 +77,20 @@ class UDPServer
 					int packetIndex = consumer.findBySequenceNumber(incomingPacket.sequenceNumber);
 					if(packetIndex > -1){
 						Packet p = packetBuffer.get(packetIndex);
+						p.setNAK("0");
 						p.setACK("1");
-						System.out.println("RECIEVED ACK, SET PACKET ACK to 1");
+						System.out.println("\n RECIEVED ACK FOR PACKET: " + p.sequenceNumber);
+						producer.updateInterface();
+						packetBuffer.set(packetIndex, p);
+					}
+				} else if(incomingPacket.getNAK() == 1){
+					int packetIndex = consumer.findBySequenceNumber(incomingPacket.sequenceNumber);
+					if(packetIndex > -1){
+						Packet p = packetBuffer.get(packetIndex);
+						p.setNAK("1");
+						p.setACK("0");
+						producer.updateInterface();
+
 						packetBuffer.set(packetIndex, p);
 					}
 				}
@@ -121,6 +133,7 @@ class UDPServer
 					offset += PACKET_SIZE;
 					sequenceNumber++;			
 				}
+
 			}
 		} 
 	}

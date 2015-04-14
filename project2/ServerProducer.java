@@ -15,6 +15,15 @@ class ServerProducer implements Runnable {
     this.window = windowIn;
     this.packetBuffer = packetBufferIn;
     this.socket = socketIn;
+    
+    // String InetAddr = "131.204.14.207";
+    // try{ 
+    //   InetAddress IPAddress = InetAddress.getByName(InetAddr);
+    //   Packet finishPacket = new Packet(0, new byte[538], IPAddress, 10046);
+    //   String payload = "finished";
+    //   finishPacket.payload = payload.getBytes();
+    //   this.packetBuffer.add(finishPacket);
+    // } 
 
   }
 
@@ -66,7 +75,7 @@ class ServerProducer implements Runnable {
   public void updateInterface(){
     Object[] sequenceNumbers = window.toArray();
     
-    // clear window attribution: http://stackoverflow.com/questions/4888362/commands-in-java-to-clear-the-screen
+    //clear window attribution: http://stackoverflow.com/questions/4888362/commands-in-java-to-clear-the-screen
     final String ANSI_CLS = "\u001b[2J";
     final String ANSI_HOME = "\u001b[H";
     System.out.print(ANSI_CLS + ANSI_HOME);

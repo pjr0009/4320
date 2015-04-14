@@ -40,8 +40,8 @@ class UDPClient {
 
     InetAddress IPAddress = InetAddress.getByName(InetAddr);
 
-    byte[] sendData = new byte[1024];
-    byte[] receiveData = new byte[1024];
+    byte[] sendData = new byte[538];
+    byte[] receiveData = new byte[538];
 
     // get http request from user
     //System.out.println("Enter valid HTTP/1.0 request. Currently, only GET requests are supported.");
@@ -64,56 +64,25 @@ class UDPClient {
 
     int i = 0;
 
-    TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER);
+    TransportLayer transport = new TransportLayer(clientSocket, IPAddress, PORT_NUMBER, gremlinDamageProbability, gremlinLossProbability);
     Thread clientThread = new Thread(transport);
     // recieve first packet
     clientSocket.receive(receivePacket);
     clientThread.start();
     String data = "";
     while (receivePacket.getData() != null && receivePacket.getData().length > 0) {
-      byte[] gremlinBytes = gremlin(gremlinDamageProbability, gremlinLossProbability, receivePacket.getData(), i);
-      if (gremlinBytes == null) {
-        //TODO: The packet was lost     
-        //The Server needs to resend the packet
-      } else {
-        // receivePacket.setData(gremlinBytes);
-        i += 1;
-        clientSocket.setSoTimeout(50000);
-        //extract checksum from recieved message
-        data = new String(receivePacket.getData());
-        transport.demux(data); 
-        // create a new packet and try to receieve next data        
-        receivePacket = new DatagramPacket(receiveData, receiveData.length);
-        try {
-          clientSocket.receive(receivePacket);
-        } catch (SocketTimeoutException e) {
-          break;
-        }
+      clientSocket.setSoTimeout(10000);
+      //extract checksum from recieved message
+      data = new String(receivePacket.getData());
+      transport.demux(data); 
+      // create a new packet and try to receieve next data        
+      receivePacket = new DatagramPacket(receiveData, receiveData.length);
+      try {
+        clientSocket.receive(receivePacket);
+      } catch (SocketTimeoutException e) {
+        System.exit(1);
       }
     }
-    // /** Section Start */
-    // // extract checksum from recieved message
-    // Matcher matcher = Pattern.compile("Checksum: +([0-9].*)").matcher(data);
-    // long checksum = 0;
-    // if (matcher.find()) {
-    //   String someNumberStr = matcher.group(1);
-
-    //   checksum = Long.parseLong(someNumberStr.trim());
-    // }
-    // // strip out checksum field 
-    // data = data.replaceAll("(Checksum: +[0-9].*)", "");
-
-    // long computedChecksum = computeChecksum(data);
-
-    // if (computedChecksum == checksum) {
-    //   System.out.println("Checksum verification passed! recieved: " + checksum + " computed: " + computedChecksum);
-    // } else {
-    //   System.out.println("Checksum verification failed! computed: " + computedChecksum);
-
-    // }
-    /** Section end: (?)May have to move this code into the above while loop if we are checking each packet for loss/corruptness */
-
-
     clientSocket.close();
   }
 
@@ -137,53 +106,4 @@ class UDPClient {
   }
 
   //Returns null if packet lost
-  public static byte[] gremlin(double inputDamageProbability, double inputLossProbability, byte byteArray[], int packet_sequence_number) {
-    double damageProbability = inputDamageProbability;
-    double lossProbability = inputLossProbability;
-    Random randomGenerator = new Random();
-    double randomDouble = randomGenerator.nextDouble();
-    //Make sure value is not 0.0
-    while (randomDouble == 0.0) {
-      randomDouble = randomGenerator.nextDouble();
-    }
-
-    if (randomDouble <= lossProbability) {
-      return null;
-    }
-    else if (randomDouble <= damageProbability) {
-      int numBytesChanged = 0;
-
-      //Gremlin function corrupts the file
-      //.5 probability that one byte is changed
-      if (randomDouble <= 0.5) {
-        //change one byte
-        numBytesChanged = 1;
-      }
-      //.3 probability that two bytes are changed
-      else if (randomDouble < 0.8) {
-        //change two bytes
-        numBytesChanged = 2;
-      }
-      //.2 probability that 3 bytes are changed
-      else {
-        //change three bytes
-        numBytesChanged = 3;
-      }
-      //Change however many number of bytes needs to be changed (at random)
-      int randomInt;
-      for (int i = 0; i < byteArray.length; i++) {
-        randomInt = randomGenerator.nextInt(256);
-
-        int indexElement = byteArray[randomInt];
-        indexElement += 1;
-        byteArray[randomInt] = (byte) indexElement;
-      }
-      //The packet was corrupted.
-      System.out.println("ERROR PACKET  " + packet_sequence_number + " CORRUPTED."); //***add packet number
-      return byteArray;
-    } else {
-      //Gremlin function does not corrupt the file        
-      return byteArray;
-    }
-  }
 }

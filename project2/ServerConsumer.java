@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.*;
 
 public class ServerConsumer implements Runnable {
+	DatagramSocket socket;
 	InetAddress IpAddress;
 	int baseSeqNumber = 0;
 	int nextSeqNumber = 0;
@@ -11,7 +12,8 @@ public class ServerConsumer implements Runnable {
 	public volatile ArrayList<Packet> packetBuffer = new ArrayList<Packet>();
 
 
-	public ServerConsumer(ArrayList<Packet> packetBufferIn, BlockingQueue < Integer > windowIn) {
+	public ServerConsumer(DatagramSocket socketIn, ArrayList<Packet> packetBufferIn, BlockingQueue < Integer > windowIn) {
+		this.socket = socketIn;
 		this.window = windowIn;
 		this.packetBuffer = packetBufferIn;
 
@@ -47,6 +49,34 @@ public class ServerConsumer implements Runnable {
 								// means that we haven't ack'd the packet yet, so the window needn't advance
 								packetBuffer.remove(indexOfPacket);
 								window.take(); // consume
+							} else if (p.getNAK() == 1){
+								// resend if NAK! WOWOWOWOW
+								Packet packet = packetBuffer.get(indexOfPacket);
+	              
+	              // now we actually need to send out the added packet
+	              byte[] response = packet.getParsedResponse();
+	              int responseLength = (response.length);
+	              try {
+								System.out.println("\n RECIEVED NAK FOR PACKET: " + packet.sequenceNumber);
+
+	              	System.out.println("\n\n RESENDING PACKET: " + packet.sequenceNumber);
+	                socket.send(new DatagramPacket(response, responseLength, packet.IPAddress, packet.portNumber));
+	                try{
+	                	Thread.sleep(2000);
+	                } catch(Exception e){
+	                	System.out.println(e);
+	                }
+	              }
+	              catch (IOException e)
+	              {
+	               System.out.println(e);
+	              }
+							} else {
+								  try{
+	                	Thread.sleep(100);
+	                } catch(Exception e){
+	                	System.out.println(e);
+	                }
 							}
 						}
 						// window.put(packetNumber);

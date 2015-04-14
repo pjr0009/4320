@@ -57,7 +57,6 @@ class RequestHandler {
     	packet.setACK(headers[1]);
     	packet.setNAK(headers[2]);
     }
-
     return packet;
 	}
 

@@ -47,17 +47,17 @@ public class Packet {
 
 	public void setACK(String arg) {
 		if (arg.equals("1")) {
-			this.ACK = true;
+			ACK = true;
 		} else {
-			this.ACK = false;
+			ACK = false;
 		}
 	}
 
 	public void setNAK(String arg) {
 		if (arg.equals("1")) {
-			this.NAK = true;
+			NAK = true;
 		} else {
-			this.NAK = false;
+			NAK = false;
 		}
 	}
 
@@ -67,7 +67,7 @@ public class Packet {
 	}
 
 	public int getNAK() {
-		return (this.NAK ? 1 : 0);
+		return (NAK ? 1 : 0);
 	}
 
 	public byte[] getParsedResponse() {
@@ -85,8 +85,7 @@ public class Packet {
 
 	public long computeChecksum() {
     // parse response into bytestream
-    if (getACK()==1){ return 0;}
-    System.out.println(new String(payload));
+    if (getACK()==1 || getNAK()==1){ return 0;}
     byte[] bytes = payload;
     //create checksum object.
     Checksum checksum = new CRC32();

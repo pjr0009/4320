@@ -4,12 +4,16 @@ import java.net.*;
 import java.io.*;
 import java.io.PrintWriter;
 import java.util.concurrent.*;
+import java.util.Random;
 
 
 public class TransportLayer implements Runnable {
   public volatile BlockingQueue<Packet> buffer = new ArrayBlockingQueue<Packet>(8); // blocking window, consumer
   DatagramSocket socket;
   int baseSeqNumber = 0;
+  double inputDamageProbability = 0;
+  double inputLossProbability = 0;
+
   // int nextSeqNumber = 0;
   int windowSize = 8;
   InetAddress IPAddress;
@@ -17,7 +21,9 @@ public class TransportLayer implements Runnable {
   File file;
   PrintWriter writer;
   int packetCount;
-  public TransportLayer(DatagramSocket socketObjectIn, InetAddress IPAddressIn, int portNumberIn) {
+  public TransportLayer(DatagramSocket socketObjectIn, InetAddress IPAddressIn, int portNumberIn, double gremlinDamageProbabilityIn, double gremlinLossProbabilityIn) {
+    this.inputDamageProbability = gremlinDamageProbabilityIn;
+    this.inputLossProbability = gremlinLossProbabilityIn;
     this.socket = socketObjectIn;
     this.portNumber = portNumberIn;
     this.IPAddress = IPAddressIn;
@@ -46,11 +52,17 @@ public class TransportLayer implements Runnable {
               // if a packet has arrived that hasnt been acknowledged, send ack
               try {
                 Packet current_packet = buffer.take();
-                updateInterface();
-                packetCount += 1;
-                current_packet.setACK("1");
                 Packet ack = new Packet(current_packet.sequenceNumber);
-                ack.setACK("1");
+
+                packetCount += 1;
+                if(gremlin()){
+                  current_packet.setNAK("1");
+                  ack.setNAK("1");
+                } else {
+                  current_packet.setACK("1");
+                  ack.setACK("1");
+                }
+                // updateInterface();
                 byte[] response = ack.getParsedResponse();
                 int responseLength = response.length;
                 socket.send(new DatagramPacket(response, responseLength, IPAddress, portNumber));
@@ -70,7 +82,7 @@ public class TransportLayer implements Runnable {
           } else {
             try {
               updateInterface();
-              Thread.sleep(500);
+              Thread.sleep(250);
             } catch(Exception e){
               System.out.println(e);
             }
@@ -83,7 +95,7 @@ public class TransportLayer implements Runnable {
 
   public void updateInterface(){
     
-    // clear window attribution: http://stackoverflow.com/questions/4888362/commands-in-java-to-clear-the-screen
+    //clear window attribution: http://stackoverflow.com/questions/4888362/commands-in-java-to-clear-the-screen
     final String ANSI_CLS = "\u001b[2J";
     final String ANSI_HOME = "\u001b[H";
     System.out.print(ANSI_CLS + ANSI_HOME);
@@ -99,23 +111,29 @@ public class TransportLayer implements Runnable {
       Packet p = (Packet)packetArray[i];
       System.out.print(" " + p.sequenceNumber);
     }
-    System.out.print("\nSENT CHECKSUMS:     ");
-
-
-    for(int i = 0; i < packetArray.length; i++){
-      Packet p = (Packet)packetArray[i];
-      System.out.print(" " + p.checksum);
-    }
-    System.out.print("\nCOMUPTED CHECKSUMS: ");
-    for(int i = 0; i < packetArray.length; i++){
-      Packet p = (Packet)packetArray[i];
-      System.out.print(" " + p.computeChecksum());
-    }
     System.out.println("");
     System.out.println("Total Packets Recieved: " + packetCount);
     System.out.println("Current Base Sequence Number: " + baseSeqNumber);
     
 
+  }
+
+  public boolean gremlin() {
+    double damageProbability = inputDamageProbability;
+    double lossProbability = inputLossProbability;
+    Random randomGenerator = new Random();
+    double randomDouble = randomGenerator.nextDouble();
+    //Make sure value is not 0.0
+    while (randomDouble == 0.0) {
+      randomDouble = randomGenerator.nextDouble();
+    }
+    if (randomDouble <= lossProbability) {
+      System.out.println("Corrupted packet");
+      return true;
+    } else {
+      //Gremlin function does not corrupt the file        
+      return false;
+    }
   }
 
 
